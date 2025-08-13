@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portfolio Backtester v24.0 (Final Professional Polish)</title>
+    
+    <!-- Chart.js Libraries & Plugins -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom"></script>
+    <!-- LZ-String for URL Compression -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.4.4/lz-string.min.js"></script>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Embedded CSS -->
+    <style>
+      :root {
+        --c-primary: #4C6FFF; --c-primary-hover: #3a5ce0; --c-primary-bg: rgba(76, 111, 255, 0.1);
+        --c-border: #DFE1E6; --c-bg-main: #F4F5F7; --c-bg-card: #ffffff; --c-bg-alt: #FAFBFC;
+        --c-text-main: #253858; --c-text-light: #6B778C;
+        --c-success: #00A375; --c-danger: #E54949;
+        --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        --fs-sm: 0.875rem; --fs-xs: 0.75rem;
+        --fs-h1: clamp(1.6rem, 4vw, 2rem); --fs-h2: clamp(1.2rem, 3vw, 1.5rem);
+        --space-xs: 4px; --space-sm: 8px; --space-md: 12px; --space-lg: 18px; --space-xl: 28px;
+        --border-radius: 8px; --shadow-sm: 0 1px 3px rgba(23, 43, 77, 0.1), 0 1px 2px rgba(23, 43, 77, 0.08);
+        --shadow-md: 0 4px 8px rgba(23, 43, 77, 0.12), 0 2px 4px rgba(23, 43, 77, 0.08);
+      }
+      *, *::before, *::after { box-sizing: border-box; }
+      html { scroll-behavior: smooth; }
+      body { font-family: var(--font-sans); background-color: var(--c-bg-main); color: var(--c-text-main); margin: 0; padding: var(--space-md); }
+      main { max-width: 1400px; margin: 0 auto; }
+      header { position: relative; padding: 0 var(--space-md); margin-bottom: var(--space-lg); }
+      h1, h2, h3, h4 { margin: 0; line-height: 1.3; font-weight: 600; }
+      h1 { font-size: var(--fs-h1); text-align: center; margin-bottom: var(--space-xs); }
+      h2 { font-size: var(--fs-h2); }
+      h3.chart-title { text-align: center; margin-top: var(--space-xl); margin-bottom: var(--space-sm); font-size: 1.1rem; }
+      .version { font-size: var(--fs-sm); color: var(--c-text-light); text-align: center; margin-bottom: var(--space-lg); }
+      .card { background: var(--c-bg-card); border-radius: var(--border-radius); padding: var(--space-lg); margin-bottom: var(--space-lg); box-shadow: var(--shadow-sm); border: 1px solid var(--c-border); transition: all 0.2s ease-in-out; }
+      .card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
+      
+      .btn { cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: var(--space-sm); font-weight: 500; font-size: var(--fs-sm); padding: 10px 16px; border-radius: 6px; text-decoration: none; transition: all 0.2s; border: 1px solid transparent; }
+      .btn:hover:not(:disabled) { transform: translateY(-1px); filter: brightness(1.05); }
+      .btn--primary { background-color: var(--c-primary); color: white; }
+      .btn--primary:hover:not(:disabled) { background-color: var(--c-primary-hover); }
+      .btn:disabled { background-color: #dfe1e6; color: #a5adba; cursor: not-allowed; }
+      .btn--secondary { background-color: #f4f5f7; color: var(--c-text-main); border-color: #dfe1e6; }
+      .btn--secondary:hover:not(:disabled) { background-color: #e6e9ee; }
+      
+      .form-control { width: 100%; font-family: inherit; font-size: 1rem; padding: 0.6em 1em; border-radius: 6px; border: 1px solid #dfe1e6; }
+      .control-group { display: flex; flex-direction: column; gap: var(--space-xs); }
+      .checkbox-group { display: flex; align-items: center; gap: var(--space-sm); margin-top: var(--space-md); }
+      .table-container { overflow-x: auto; position: relative; }
+      .table-container.is-scrollable::after { content: ''; position: absolute; top: 0; right: 0; bottom: 0; width: 30px; background: linear-gradient(to right, transparent, rgba(0,0,0,0.05)); pointer-events: none; }
+      table { border-collapse: collapse; width: 100%; margin-top: var(--space-md); }
+      th, td { border: 1px solid var(--c-border); padding: 8px 12px; text-align: right; font-size: var(--fs-sm); white-space: nowrap; }
+      th { background: var(--c-bg-alt); font-weight: 600; text-align: center; }
+      tbody tr:nth-child(even) { background-color: var(--c-bg-alt); }
+      td:first-child, th:first-child { text-align: left; font-weight: 600; }
+      .positive { color: var(--c-success); } .negative { color: var(--c-danger); }
+      .hidden { display: none !important; }
+      .visually-hidden { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border-width: 0; }
+      .app-section { display: none; }
+      .app-section.active { display: block; animation: fadeIn 0.4s ease-out; }
+      @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+      .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-lg); padding-bottom: var(--space-md); border-bottom: 1px solid var(--c-border); }
+      .navigation-buttons { display: flex; justify-content: space-between; align-items: center; margin-top: var(--space-xl); flex-wrap: wrap; gap: var(--space-md); }
+      .nav-group { display: flex; gap: var(--space-sm); flex-wrap: wrap; }
+      .controls-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: var(--space-lg) var(--space-md); }
+      
+      .stepper-nav { display: flex; justify-content: space-between; position: sticky; top: var(--space-md); z-index: 100; }
+      .step { display: flex; flex-direction: column; align-items: center; gap: var(--space-sm); color: var(--c-text-light); font-size: var(--fs-xs); font-weight: 600; text-align: center; flex: 1; }
+      .step-icon { width: 32px; height: 32px; border-radius: 50%; border: 2px solid var(--c-border); display: flex; align-items: center; justify-content: center; font-weight: bold; background-color: var(--c-bg-card); }
+      .step.active .step-icon { border-color: var(--c-primary); color: var(--c-primary); }
+      .step.completed .step-icon { border-color: var(--c-success); background-color: var(--c-success); color: var(--c-white); }
+      .step.completed .step-icon svg { display: block; } .step.completed .step-icon > span { display: none; }
+      .step.locked { opacity: 0.6; cursor: not-allowed; } .step:not(.locked) { cursor: pointer; }
+      
+      #section-2 .portfolio-card { background: var(--c-bg-alt); border: 1px solid var(--c-border); }
+      #section-2 .portfolio-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-md); }
+      #section-2 .portfolio-name-input { font-size: 1.25rem; font-weight: 600; border: none; background: transparent; padding: 0; width: 100%; }
+      #section-2 .ticker-input-row { display: grid; grid-template-columns: 1fr auto auto; gap: var(--space-sm); align-items: center; margin-bottom: var(--space-sm); }
+      #section-2 .allocation-input { max-width: 80px; text-align: right; }
+      #section-2 .portfolio-footer { display: flex; justify-content: flex-end; align-items: center; gap: var(--space-md); margin-top: var(--space-md); }
+      #section-2 .portfolio-allocation-total { font-size: var(--fs-sm); font-weight: 600; padding: var(--space-sm); border-radius: 6px; }
+      #section-2 .portfolio-allocation-total.invalid { color: var(--c-danger); background-color: rgba(229, 73, 73, 0.1); }
+      #section-2 .portfolio-allocation-total.valid { color: var(--c-success); background-color: rgba(0, 163, 117, 0.1); }
+      #section-2 .empty-state { text-align: center; padding: var(--space-xl); border: 2px dashed var(--c-border); border-radius: var(--border-radius); }
+      
+      .run-button-container { display: flex; justify-content: center; align-items: center; gap: var(--space-md); margin: var(--space-xl) 0; }
+      .loader { display: none; width: 24px; height: 24px; border: 3px solid var(--c-primary); border-bottom-color: transparent; border-radius: 50%; animation: rotation 1s linear infinite; }
+      @keyframes rotation { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+      .metric-label { display: inline-flex; align-items: center; gap: var(--space-sm); }
+      .metric-label .info-icon { color: #a5adba; cursor: help; }
+      #modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(23, 43, 77, 0.5); z-index: 200; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.3s; }
+      #modal-overlay.visible { opacity: 1; pointer-events: all; }
+      .modal-content { background: white; padding: var(--space-lg); border-radius: var(--border-radius); width: 90%; max-width: 500px; transform: scale(0.95); transition: transform 0.3s; }
+      #modal-overlay.visible .modal-content { transform: scale(1); }
+      .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-md); }
+      .modal-footer { margin-top: var(--space-lg); display: flex; justify-content: flex-end; }
+      #debug-window { position: fixed; bottom: 10px; right: 10px; width: 350px; max-height: 250px; background: rgba(0,0,0,0.85); color: white; border-radius: var(--border-radius); padding: var(--space-sm); font-family: monospace; font-size: 11px; z-index: 9999; overflow-y: auto; box-shadow: 0 4px 15px rgba(0,0,0,0.4); border-top: 2px solid var(--c-primary); }
+      #debug-window p { margin: 0; padding: 3px 5px; border-bottom: 1px solid #444; word-wrap: break-word; }
+      #debug-window pre { background: #222; padding: var(--space-sm); border-radius: 4px; white-space: pre-wrap; word-break: break-all; }
+      #debug-window .log-error { color: #ff8b8b; } #debug-window .log-success { color: #a5d6a7; } #debug-window .log-action { color: #82baff; }
+      #app-header-actions { position: absolute; top: 0; right: 0; }
+      
+      #section-1 .card { padding: var(--space-xl); }
+      #section-1 .controls-grid { gap: var(--space-xl) var(--space-lg); }
+
+      .chart-container { position: relative; width: 100%; height: 400px; margin-top: var(--space-md); }
+      
+      @media print {
+        body { background-color: white !important; color: black !important; font-size: 10pt; }
+        .card, .stepper-nav { box-shadow: none; border: 1px solid #ccc; page-break-inside: avoid; }
+        .card:hover { transform: none; }
+        h1, h2, h3, h4 { color: black; }
+        header, .navigation-buttons, .btn, .stepper-nav, #section-1, #section-2, .portfolio-footer, .portfolio-header button, #debug-window, #modal-overlay, #app-header-actions { display: none !important; }
+        main { max-width: 100%; padding: 0; }
+        .app-section { display: block !important; }
+        @page { margin: 0.75in; }
+      }
+    </style>
+</head>
+<body>
+    <main id="app-container">
+        <header>
+            <h1 data-uitext="mainTitle"></h1>
+            <p class="version" data-uitext="version"></p>
+            <div id="app-header-actions"><button class="btn btn--secondary" data-action="toggleDebug" data-uitext="toggleDebug"></button></div>
+        </header>
+        <nav class="stepper-nav card" data-component="stepper"></nav>
+        <section id="section-1" class="app-section"><div class="card"><div class="section-header"><h2 data-uitext="setupTitle"></h2></div><div class="controls-grid" data-component="config-form"></div><div class="navigation-buttons"><span class="nav-group"></span><div class="nav-group"><button class="btn btn--primary" data-action="goToStep" data-step="2" data-uitext="nextPortfolios"></button></div></div></div></section>
+        <section id="section-2" class="app-section"><div class="card"><div class="section-header"><h2 data-uitext="portfoliosTitle"></h2></div><div data-component="portfolios-container"></div><div style="margin-top: var(--space-lg);"><button class="btn btn--secondary" data-action="addPortfolio"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg><span data-uitext="addPortfolio"></span></button></div><div class="run-button-container"><button id="run-backtest-btn" class="btn btn--primary" style="font-size: 1rem;" data-action="runBacktest" data-uitext="runBacktest" disabled></button><div class="loader"></div></div></div></section>
+        <section id="section-3" class="app-section"><div data-component="results-area"></div><div class="navigation-buttons"><div class="nav-group"><button class="btn btn--secondary" data-action="goToStep" data-step="2" data-uitext="back"></button><button class="btn btn--secondary" data-action="startOver" data-uitext="startOver"></button></div><div class="nav-group"><button class="btn btn--secondary" data-action="toggleModal" data-uitext="share"></button><button class="btn btn--secondary" data-action="exportCSV" data-uitext="exportCSV"></button><button class="btn btn--secondary" data-action="exportPDF" data-uitext="exportPDF"></button><button class="btn btn--primary" data-action="goToStep" data-step="4" data-uitext="nextProjections"></button></div></div></section>
+        <section id="section-4" class="app-section"><div data-component="projections-area"></div><div class="navigation-buttons"><div class="nav-group"><button class="btn btn--secondary" data-action="goToStep" data-step="3" data-uitext="backToResults"></button></div><span class="nav-group"></span></div></section>
+    </main>
+    <div id="modal-overlay" class="hidden" role="dialog" aria-modal="true" aria-labelledby="modal-title"><div class="modal-content"><div class="modal-header"><h2 id="modal-title" data-uitext="shareTitle"></h2><button class="btn-icon" data-action="toggleModal" aria-label="Close modal">&times;</button></div><p style="font-size: var(--fs-sm); color: var(--c-text-light);" data-uitext="shareSubtitle"></p><input type="text" readonly class="form-control" data-component="share-url-input"><div class="modal-footer"><button class="btn btn--primary" data-action="copyShareUrl" data-uitext="copyUrl"></button></div><div id="copy-announcer" class="visually-hidden" aria-live="polite" role="status"></div></div></div>
+    <div id="debug-window" class="hidden"></div>
+    <template id="portfolio-template"><div class="portfolio-card"><div class="portfolio-header"><input type="text" class="portfolio-name-input" data-action="updatePortfolioName"><button class="btn-icon danger" data-action="removePortfolio"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button></div><div data-component="tickers-container"></div><div class="portfolio-footer"><div class="portfolio-allocation-total"></div><button class="btn btn--secondary" data-action="addTicker"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg><span data-uitext="addTicker"></span></button></div></div></template>
+    <template id="ticker-template"><div class="ticker-input-row"><input type="text" class="form-control" placeholder="TICKER" data-action="updateTicker" data-field="symbol" onkeyup="this.value = this.value.toUpperCase()"><input type="number" class="form-control allocation-input" placeholder="%" min="0" max="100" data-action="updateTicker" data-field="allocation"><button class="btn-icon" title="Remove Ticker" data-action="removeTicker"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button></div></template>
+
+    <script>
+    // --- UI TEXT STRINGS (for i18n preparation) ---
+    const uiStrings = {
+        mainTitle: 'Portfolio Backtester',
+        version: 'v24.0 (Final Professional Polish)',
+        toggleDebug: 'Toggle Debug',
+        setupTitle: 'Backtest Setup',
+        portfoliosTitle: 'Configure Portfolios',
+        nextPortfolios: 'Next: Configure Portfolios →',
+        addPortfolio: 'Add Portfolio',
+        addTicker: 'Ticker',
+        runBacktest: 'Run Backtest',
+        back: '← Back',
+        startOver: 'Start Over',
+        share: 'Share',
+        exportCSV: 'CSV',
+        exportPDF: 'PDF',
+        nextProjections: 'Future Projections →',
+        backToResults: '← Back to Results',
+        shareTitle: 'Share Backtest',
+        shareSubtitle: 'Copy this link to save or share your scenario.',
+        copyUrl: 'Copy URL',
+        copied: 'Copied!',
+        projectionsTitle: 'Future Projections Setup',
+        runProjections: 'Run Projections',
+        emptyPortfolioStateTitle: 'You have no portfolios.',
+        emptyPortfolioStateSubtitle: 'Click the "Add Portfolio" button below to get started.',
+        labels: {
+            startDate: 'Start Date', endDate: 'End Date', initialInvestment: 'Initial Investment ($)',
+            contributionAmount: 'Contribution Amount ($)', contributionFrequency: 'Contribution Frequency',
+            rebalanceFrequency: 'Rebalance Frequency', benchmark1: 'Benchmark 1', benchmark2: 'Benchmark 2',
+            dividendTax: 'Dividend Tax Rate (%)', cgtTax: 'Capital Gains Tax (%)',
+            reinvestDividends: 'Reinvest Dividends?', portfolioToProject: 'Portfolio to Project',
+            currentAge: 'Current Age', retirementAge: 'Retirement Age', lifeExpectancy: 'Life Expectancy',
+            annualSavings: 'Annual Savings ($)', savingsIncrease: 'Annual Savings Increase (%)',
+            expectedInflation: 'Expected Inflation (%)'
+        },
+        tooltips: {
+            "Total Return": "Ending Balance minus Total Invested.", "Annual Return": "Compound Annual Growth Rate (CAGR).",
+            "Yield on Cost": "Annual income relative to the total invested capital.", "Volatility": "Standard deviation of returns.",
+            "Sharpe Ratio": "Risk-adjusted return (vs. risk-free rate).", "Sortino Ratio": "Risk-adjusted return focusing on downside volatility.",
+            "Beta": "Volatility relative to a benchmark (e.g., SPY).", "Alpha": "Excess return over the benchmark's expected return.",
+            "Worst Drop": "The largest single drop from a peak to a trough.", "Longest Recovery": "The longest time it took to get back to a previous peak.",
+            "Expense Ratio": "Annual fee charged by the underlying funds.", "Turnover Rate": "How often assets in the portfolio are bought or sold.",
+            "Tax Cost Ratio": "How much returns are reduced by taxes on distributions."
+        }
+    };
+
+    // --- MOCK DATA GENERATION (Abstracted) ---
+    function createMockData(name, tickers, config, isBenchmark = false) {
+        const numYears = 15;
+        let assetAllocHistory = [];
+        let currentStockPct = isBenchmark ? 100 : tickers.find(t => t.symbol === 'VTI' || t.symbol === 'SPY')?.allocation || 0;
+        for (let i = 0; i < numYears; i++) {
+            assetAllocHistory.push({ stocks: currentStockPct, bonds: 100 - currentStockPct });
+            currentStockPct += (Math.random() - 0.4) * 5; // Drift
+            if (i % 4 === 3) currentStockPct = isBenchmark ? 100 : tickers.find(t => t.symbol === 'VTI' || t.symbol === 'SPY')?.allocation || 0; // Rebalance
+        }
+        const drawdownHistory = Array.from({ length: numYears }, (_, i) => -Math.abs(Math.sin(i / 2) * (15 + Math.random() * 20) * (i / numYears)));
+
+        return { name, holdings: tickers.map(t => ({ symbol: t.symbol, inception: '2010-01-01', targetPct: t.allocation, shares: 100 + Math.random() * 2000, startValue: config.initialInvestment * (t.allocation / 100), endValue: (config.initialInvestment * (t.allocation / 100)) * (5 + Math.random() * 15), drift: Math.random() * 5 - 2.5 })), startingBalance: config.initialInvestment, contributions: 288400, totalInvested: config.initialInvestment + 288400, finalBalance: Math.round(800000 + Math.random() * 1800000), cagr: 10 + Math.random() * 10, totalDividends: Math.round(50000 + Math.random() * 150000), incomeLast12Mo: Math.round(10000 + Math.random() * 15000), yieldOnCost: 2 + Math.random() * 5, assetAllocation: { stocks: isBenchmark ? 100 : 100 - tickers.reduce((s, t) => s + (t.symbol === 'BND' ? t.allocation : 0), 0), bonds: isBenchmark ? 0 : tickers.reduce((s, t) => s + (t.symbol === 'BND' ? t.allocation : 0), 0), cash: 0 }, volatility: 15 + Math.random() * 5, sharpeRatio: 0.8 + Math.random() * 0.2, sortinoRatio: 0.8 + Math.random() * 0.2, beta: 0.8 + Math.random() * 0.4, alpha: -1 + Math.random() * 3, bestYear: 30 + Math.random() * 50, worstYear: -15 - Math.random() * 20, worstDrop: -20 - Math.random() * 15, longestRecovery: Math.round(150 + Math.random() * 500), winningMonths: 65 + Math.random() * 10, winningStreak: Math.round(6 + Math.random() * 8), losingStreak: 3, expenseRatio: 0.05 + Math.random() * 0.2, turnover: 5 + Math.random() * 20, taxCostRatio: 0.1 + Math.random() * 0.4, growth: Array.from({ length: numYears }, (_, j) => 100000 * Math.pow(1.12, j + 1) * (1 + (Math.random() - 0.5) * (j / 10))), monthlyReturns: Array.from({ length: numYears - 1 }, () => Array.from({ length: 12 }, () => (Math.random() - 0.45) * 15)), annualReturns: Array.from({ length: numYears - 1 }, () => 12 + (Math.random() - 0.5) * 20), income: Array.from({ length: numYears - 1 }, (v, j) => (1800 + j * 200) * Math.pow(1.05, j)), assetAllocationHistory: assetAllocHistory, drawdownHistory: drawdownHistory };
+    }
+    function createCorrelationMatrix(portfolios) {
+        const numP = portfolios.length;
+        const matrix = Array(numP).fill(null).map(() => Array(numP).fill(0));
+        for (let i = 0; i < numP; i++) {
+            for (let j = i; j < numP; j++) {
+                if (i === j) {
+                    matrix[i][j] = 1;
+                } else {
+                    const corr = Math.random() * 1.8 - 0.8;
+                    matrix[i][j] = Math.max(-1, Math.min(1, corr));
+                    matrix[j][i] = matrix[i][j];
+                }
+            }
+        }
+        return matrix;
+    }
+
+    // --- MAIN APP LOGIC ---
+    document.addEventListener('DOMContentLoaded', () => {
+        Chart.register(ChartZoom);
+
+        let state = { currentStep: 1, maxStep: 1, isDebugVisible: false, isModalVisible: false, config: { startDate: '2011-10-20', endDate: '2025-08-13', initialInvestment: 100000, contributionAmount: 400, contributionFrequency: 'weekly', rebalanceFrequency: 'annually', reinvestDividends: true, riskFreeRate: 0, dividendTax: 0, cgtTax: 0, benchmark1: 'SPY', benchmark2: 'QQQ' }, portfolios: [], results: null, charts: {}, projections: { inputs: { currentAge: 30, retirementAge: 65, lifeExpectancy: 95, inflation: 2.5, annualSavings: 15000, savingsIncrease: 2 }, results: null, selectedPortfolio: '', isLoading: false } };
+        const dom = { app: document.getElementById('app-container'), stepper: document.querySelector('[data-component="stepper"]'), sections: document.querySelectorAll('.app-section'), configForm: document.querySelector('[data-component="config-form"]'), portfoliosContainer: document.querySelector('[data-component="portfolios-container"]'), resultsArea: document.querySelector('[data-component="results-area"]'), projectionsArea: document.querySelector('[data-component="projections-area"]'), runBacktestBtn: document.getElementById('run-backtest-btn'), debugWindow: document.getElementById('debug-window'), modalOverlay: document.getElementById('modal-overlay'), shareUrlInput: document.querySelector('[data-component="share-url-input"]'), portfolioTemplate: document.getElementById('portfolio-template'), tickerTemplate: document.getElementById('ticker-template'), copyAnnouncer: document.getElementById('copy-announcer') };
+        const log = (message, type = 'info') => { if (!dom.debugWindow) return; const p = document.createElement('p'); p.innerHTML = `<strong>[${new Date().toLocaleTimeString()}]</strong> ${message}`; const typeMap = { error: 'log-error', success: 'log-success', action: 'log-action' }; if (typeMap[type]) p.className = typeMap[type]; dom.debugWindow.appendChild(p); dom.debugWindow.scrollTop = dom.debugWindow.scrollHeight; };
+        const logAction = (name, payload) => { let payloadString = ''; if (payload) { payloadString = `<pre>${JSON.stringify(payload, null, 2)}</pre>`; } log(`ACTION: ${name} ${payload ? '| Payload:' : ''} ${payloadString}`, 'action'); }
+
+        function render(triggeringAction = 'unknown') { log(`Render triggered by: ${triggeringAction}`); renderUIText(); renderDebug(); renderModal(); renderStepper(); renderSections(); renderConfigForm(); renderPortfolios(); renderResults(); renderProjections(); setTableScrollHint(); }
+        function renderUIText() { document.querySelectorAll('[data-uitext]').forEach(el => { el.textContent = uiStrings[el.dataset.uitext] || el.dataset.uitext; });}
+        function renderDebug() { dom.debugWindow.classList.toggle('hidden', !state.isDebugVisible); }
+        function renderModal() { dom.modalOverlay.classList.toggle('hidden', !state.isModalVisible); dom.modalOverlay.classList.toggle('visible', state.isModalVisible); if (state.isModalVisible) { dom.shareUrlInput.value = actions.generateShareUrl(); dom.shareUrlInput.select(); } }
+        function renderStepper() { const checkIcon = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>`; dom.stepper.innerHTML = [1, 2, 3, 4].map(s => { const l = ['Setup', 'Portfolios', 'Results', 'Projections'][s - 1]; return `<div class="step ${state.currentStep === s ? 'active' : ''} ${state.maxStep > s ? 'completed' : ''} ${s > state.maxStep ? 'locked' : ''}" data-step="${s}"><div class="step-icon">${state.maxStep > s ? checkIcon : `<span>${s}</span>`}</div><span class="step-label">${l}</span></div>`; }).join(''); }
+        function renderSections() { dom.sections.forEach(s => s.classList.toggle('active', parseInt(s.id.split('-')[1]) === state.currentStep)); }
+        function renderConfigForm() { if (state.currentStep !== 1) return; const c = state.config; const l = uiStrings.labels; dom.configForm.innerHTML = `<div class="control-group"><label>${l.startDate}</label><input type="date" class="form-control" data-config-key="startDate" value="${c.startDate}"></div> <div class="control-group"><label>${l.endDate}</label><input type="date" class="form-control" data-config-key="endDate" value="${c.endDate}"></div> <div class="control-group"><label>${l.initialInvestment}</label><input type="number" class="form-control" data-config-key="initialInvestment" value="${c.initialInvestment}"></div> <div class="control-group"><label>${l.contributionAmount}</label><input type="number" class="form-control" data-config-key="contributionAmount" value="${c.contributionAmount}"></div> <div class="control-group"><label>${l.contributionFrequency}</label><select class="form-control" data-config-key="contributionFrequency" value="${c.contributionFrequency}"><option>Weekly</option><option>Monthly</option></select></div> <div class="control-group"><label>${l.rebalanceFrequency}</label><select class="form-control" data-config-key="rebalanceFrequency" value="${c.rebalanceFrequency}"><option>Annually</option><option>Quarterly</option></select></div> <div class="control-group"><label>${l.benchmark1}</label><input type="text" class="form-control" data-config-key="benchmark1" value="${c.benchmark1}"></div> <div class="control-group"><label>${l.benchmark2}</label><input type="text" class="form-control" data-config-key="benchmark2" value="${c.benchmark2}"></div> <div class="control-group"><label>${l.dividendTax}</label><input type="number" class="form-control" data-config-key="dividendTax" value="${c.dividendTax}"></div> <div class="control-group"><label>${l.cgtTax}</label><input type="number" class="form-control" data-config-key="cgtTax" value="${c.cgtTax}"></div> <div class="checkbox-group"><input type="checkbox" id="reinvest-dividends" data-config-key="reinvestDividends" ${c.reinvestDividends ? 'checked' : ''}><label for="reinvest-dividends">${l.reinvestDividends}</label></div>`; }
+        function renderPortfolios() { if (state.currentStep !== 2) return; if (state.portfolios.length === 0) { dom.portfoliosContainer.innerHTML = `<div class="empty-state"><h3>${uiStrings.emptyPortfolioStateTitle}</h3><p>${uiStrings.emptyPortfolioStateSubtitle}</p></div>`; validateAllPortfolios(); return; } dom.portfoliosContainer.innerHTML = ''; state.portfolios.forEach(p => { const pNode = dom.portfolioTemplate.content.cloneNode(true); pNode.querySelector('.portfolio-card').dataset.id = p.id; pNode.querySelector('.portfolio-name-input').value = p.name; pNode.querySelector('.portfolio-name-input').dataset.id = p.id; pNode.querySelector('[data-action="removePortfolio"]').dataset.id = p.id; pNode.querySelector('[data-action="addTicker"]').dataset.id = p.id; const tickersContainer = pNode.querySelector('[data-component="tickers-container"]'); p.tickers.forEach(t => { const tNode = dom.tickerTemplate.content.cloneNode(true); const row = tNode.querySelector('.ticker-input-row'); row.dataset.id = t.id; row.dataset.portfolioId = p.id; tNode.querySelector('[data-field="symbol"]').value = t.symbol; tNode.querySelector('[data-field="allocation"]').value = t.allocation; tickersContainer.appendChild(tNode); }); dom.portfoliosContainer.appendChild(pNode); }); validateAllPortfolios(); }
+        function renderResults() {
+            if (state.currentStep !== 3 || !state.results) { dom.resultsArea.innerHTML = ''; return; }
+            Object.values(state.charts).forEach(c => { if (c && c.destroy) c.destroy() });
+            const allPortfolios = [...state.results.portfolios, ...state.results.benchmarks];
+            dom.resultsArea.innerHTML = `<div class="card"><h2 class="section-header">Performance</h2><div class="chart-container"><canvas id="growthChart"></canvas></div><h3 class="chart-title">Annual Returns</h3><div class="chart-container"><canvas id="annualReturnsChart"></canvas></div></div> <div class="card"><h2 class="section-header">Portfolio Efficiency (Risk vs. Return)</h2><div class="chart-container" style="height: 450px;"><canvas id="efficientFrontierChart"></canvas></div></div> <div class="card"><h2 class="section-header">Monthly Performance Analysis</h2><div data-component="monthly-heatmap-container"></div></div> <div class="card"><h2 class="section-header">Risk, Volatility & Correlation</h2><div data-component="risk-table"></div><h3 class="chart-title">Correlation Matrix</h3><div data-component="correlation-matrix-container" style="padding: 0 var(--space-sm);"></div></div> <div class="card"><h2 class="section-header">Capital Snapshot</h2><div data-component="capital-snapshot-table"></div></div> <div class="card"><h2 class="section-header">Asset Allocation</h2><div class="chart-container" style="height: 300px;"><canvas id="assetAllocationChart"></canvas></div><div data-component="allocation-table"></div></div> <div class="card"><h2 class="section-header">Income & Yield</h2><div data-component="income-table"></div></div> <div class="card"><h2 class="section-header">Costs & Efficiency</h2><div data-component="costs-table"></div></div> <div class="card"><h2 class="section-header">Drawdowns</h2><div class="chart-container" style="height: 300px;"><canvas id="drawdownsChart"></canvas></div><div data-component="drawdowns-table"></div></div> <div class="card"><h2 class="section-header">Consistency</h2><div data-component="consistency-table"></div></div> <div class="card"><h2 class="section-header">Holdings Breakdown</h2><div data-component="holdings-tables-container"></div></div>`;
+            const portfolioColors = ['#4C6FFF', '#00A375', '#E54949', '#7E57C2', '#FFA000'];
+            const commonOptions = (isTime = false, yLabelCallback) => ({ responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false }, plugins: { legend: { position: 'bottom' }, tooltip: { backgroundColor: '#253858', titleFont: { weight: 'bold' }, bodyFont: { family: "'Inter', sans-serif" }, cornerRadius: 4 }, zoom: { pan: { enabled: isTime, mode: 'x' }, zoom: { wheel: { enabled: isTime }, mode: 'x' } } }, scales: { x: isTime ? { type: 'time', time: { unit: 'year' }, grid: { color: 'rgba(0,0,0,0.05)' } } : { grid: { color: 'rgba(0,0,0,0.05)' } }, y: { ticks: { callback: yLabelCallback }, grid: { color: 'rgba(0,0,0,0.05)' } } } });
+            state.charts.growth = new Chart(document.getElementById('growthChart').getContext('2d'), { type: 'line', data: { labels: state.results.labels, datasets: allPortfolios.map((p, i) => ({ label: p.name, data: p.growth, borderColor: portfolioColors[i % 5], tension: 0.1, pointRadius: 0, fill: true, backgroundColor: (ctx) => { const gradient = ctx.chart.ctx.createLinearGradient(0, 0, 0, ctx.chart.height); const color = portfolioColors[i % 5]; gradient.addColorStop(0, `${color}40`); gradient.addColorStop(1, `${color}00`); return gradient; } })) }, options: commonOptions(true, v => `$${Math.round(v / 1000)}k`) });
+            state.charts.annualReturns = new Chart(document.getElementById('annualReturnsChart').getContext('2d'), { type: 'bar', data: { labels: state.results.labels.slice(1).map(d => d.getFullYear()), datasets: allPortfolios.map((p, i) => ({ label: p.name, data: p.annualReturns, backgroundColor: portfolioColors[i % 5] })) }, options: commonOptions(false, v => `${v.toFixed(0)}%`) });
+            state.charts.efficientFrontier = new Chart(document.getElementById('efficientFrontierChart').getContext('2d'), { type: 'scatter', data: { datasets: allPortfolios.map((p, i) => ({ label: p.name, data: [{ x: p.volatility, y: p.cagr }], backgroundColor: portfolioColors[i % 5], pointRadius: 8, pointHoverRadius: 12 })) }, options: { ...commonOptions(), plugins: { legend: { position: 'bottom' }, tooltip: { ...commonOptions().plugins.tooltip, callbacks: { label: (c) => `${c.dataset.label}: (${c.parsed.x.toFixed(1)}% Risk, ${c.parsed.y.toFixed(1)}% Return)` } } }, scales: { x: { title: { display: true, text: 'Risk (Annualized Volatility %)' }, grid: { color: 'rgba(0,0,0,0.05)' } }, y: { title: { display: true, text: 'Return (CAGR %)' }, ticks: { callback: v => `${v.toFixed(1)}%` }, grid: { color: 'rgba(0,0,0,0.05)' } } } } });
+            state.charts.assetAllocation = new Chart(document.getElementById('assetAllocationChart').getContext('2d'), { type: 'line', data: { labels: state.results.labels, datasets: [{ label: 'Stocks', data: allPortfolios[0].assetAllocationHistory.map(d => d.stocks), borderColor: portfolioColors[0], backgroundColor: portfolioColors[0] }, { label: 'Bonds', data: allPortfolios[0].assetAllocationHistory.map(d => d.bonds), borderColor: portfolioColors[1], backgroundColor: portfolioColors[1] }] }, options: { ...commonOptions(true, v => `${v}%`), scales: { ...commonOptions(true, v => `${v}%`).scales, y: { ...commonOptions(true, v => `${v}%`).scales.y, stacked: true, max: 100 } }, plugins: { ...commonOptions(true).plugins, tooltip: { ...commonOptions(true).plugins.tooltip, callbacks: { label: (c) => `${c.dataset.label}: ${c.parsed.y.toFixed(1)}%` } } } } });
+            state.charts.drawdowns = new Chart(document.getElementById('drawdownsChart').getContext('2d'), { type: 'line', data: { labels: state.results.labels, datasets: allPortfolios.map((p, i) => ({ label: p.name, data: p.drawdownHistory, borderColor: portfolioColors[i % 5], pointRadius: 0, tension: 0.2 })) }, options: { ...commonOptions(true, v => `${v}%`), plugins: { ...commonOptions(true).plugins, tooltip: { ...commonOptions(true).plugins.tooltip, callbacks: { label: (c) => `${c.dataset.label}: ${c.parsed.y.toFixed(1)}%` } } } } });
+
+            document.querySelector('[data-component="monthly-heatmap-container"]').innerHTML = allPortfolios.map(p => `<h3>${p.name}</h3>` + createHeatmapHTML(p)).join('');
+            document.querySelector('[data-component="correlation-matrix-container"]').innerHTML = createCorrelationMatrixHTML(allPortfolios, state.results.correlationMatrix);
+
+            document.querySelector('[data-component="risk-table"]').innerHTML = createTableHTML(['Metric', ...allPortfolios.map(p => p.name)], [['Volatility', ...allPortfolios.map(p => `${p.volatility.toFixed(1)} %`)], ['Sharpe Ratio', ...allPortfolios.map(p => p.sharpeRatio.toFixed(2))], ['Sortino Ratio', ...allPortfolios.map(p => p.sortinoRatio.toFixed(2))], ['Beta (vs. SPY)', ...allPortfolios.map(p => p.beta.toFixed(2))], ['Alpha (vs. SPY)', ...allPortfolios.map(p => `${p.alpha.toFixed(1)} %`)]], uiStrings.tooltips);
+            document.querySelector('[data-component="capital-snapshot-table"]').innerHTML = createTableHTML(['Metric', ...allPortfolios.map(p => p.name)], [['Starting Balance', ...allPortfolios.map(p => `$${p.startingBalance.toLocaleString()}`)], ['Contributions', ...allPortfolios.map(p => `$${p.contributions.toLocaleString()}`)], ['Total Invested', ...allPortfolios.map(p => `$${p.totalInvested.toLocaleString()}`)], ['Ending Balance', ...allPortfolios.map(p => `$${p.finalBalance.toLocaleString()}`)], ['Total Return', ...allPortfolios.map(p => `$${(p.finalBalance - p.totalInvested).toLocaleString()} (${((p.finalBalance / p.totalInvested - 1) * 100).toFixed(1)} %)`)] , ['Annual Return', ...allPortfolios.map(p => `${p.cagr.toFixed(1)} %`)]], uiStrings.tooltips);
+            document.querySelector('[data-component="allocation-table"]').innerHTML = createTableHTML(['Metric', ...allPortfolios.map(p => p.name)], [['Stocks', ...allPortfolios.map(p => `${p.assetAllocation.stocks.toFixed(1)} %`)], ['Bonds', ...allPortfolios.map(p => `${p.assetAllocation.bonds.toFixed(1)} %`)], ['Cash', ...allPortfolios.map(p => `${p.assetAllocation.cash.toFixed(1)} %`)]]);
+            document.querySelector('[data-component="income-table"]').innerHTML = createTableHTML(['Metric', ...allPortfolios.map(p => p.name)], [['Total Dividends', ...allPortfolios.map(p => `$${p.totalDividends.toLocaleString()}`)], ['Income Last 12 Mo', ...allPortfolios.map(p => `$${p.incomeLast12Mo.toLocaleString()}`)], ['Yield on Cost', ...allPortfolios.map(p => `${p.yieldOnCost.toFixed(1)} %`)]], uiStrings.tooltips);
+            document.querySelector('[data-component="costs-table"]').innerHTML = createTableHTML(['Metric', ...allPortfolios.map(p => p.name)], [['Expense Ratio', ...allPortfolios.map(p => `${p.expenseRatio.toFixed(2)} %`)], ['Turnover Rate', ...allPortfolios.map(p => `${p.turnover.toFixed(0)} %`)], ['Tax Cost Ratio', ...allPortfolios.map(p => `${p.taxCostRatio.toFixed(2)} %`)]], uiStrings.tooltips);
+            document.querySelector('[data-component="drawdowns-table"]').innerHTML = createTableHTML(['Metric', ...allPortfolios.map(p => p.name)], [['Best Year', ...allPortfolios.map(p => `<span class="positive">${p.bestYear.toFixed(1)} %</span>`)], ['Worst Year', ...allPortfolios.map(p => `<span class="negative">${p.worstYear.toFixed(1)} %</span>`)], ['Worst Drop', ...allPortfolios.map(p => `<span class="negative">${p.worstDrop.toFixed(1)} %</span>`)], ['Longest Recovery', ...allPortfolios.map(p => `${p.longestRecovery} d`)]], uiStrings.tooltips);
+            document.querySelector('[data-component="consistency-table"]').innerHTML = createTableHTML(['Metric', ...allPortfolios.map(p => p.name)], [['Winning Months', ...allPortfolios.map(p => `${p.winningMonths.toFixed(1)} %`)], ['Winning Streak', ...allPortfolios.map(p => `${p.winningStreak} mo`)], ['Losing Streak', ...allPortfolios.map(p => `${p.losingStreak} mo`)]]);
+            document.querySelector('[data-component="holdings-tables-container"]').innerHTML = allPortfolios.map(p => { const headers = ['Ticker', 'Inception', 'Target %', 'Shares', 'Start $', 'End $', 'Drift %']; const rows = p.holdings.map(h => [h.symbol, h.inception, `${h.targetPct.toFixed(1)} %`, h.shares.toFixed(2), `$${h.startValue.toLocaleString()}`, `$${h.endValue.toLocaleString()}`, `${h.drift.toFixed(1)} %`]); return `<h3>${p.name}</h3>` + createTableHTML(headers, rows); }).join('');
+        }
+        function renderProjections() {
+            if (state.currentStep !== 4) { dom.projectionsArea.innerHTML = ''; return; }
+            const i = state.projections.inputs; const r = state.projections.results; const isLoading = state.projections.isLoading;
+            const availablePortfolios = state.results ? state.results.portfolios.map(p => p.name) : [];
+            if (!state.projections.selectedPortfolio && availablePortfolios.length > 0) { state.projections.selectedPortfolio = availablePortfolios[0]; }
+            let setupHTML = `<div class="card"><div class="section-header"><h2>${uiStrings.projectionsTitle}</h2></div><div class="controls-grid"><div class="control-group"><label>${uiStrings.labels.portfolioToProject}</label><select class="form-control" data-action="selectProjectionPortfolio" ${isLoading ? 'disabled' : ''}>${availablePortfolios.map(name => `<option ${name === state.projections.selectedPortfolio ? 'selected' : ''}>${name}</option>`).join('')}</select></div><div class="control-group"><label>${uiStrings.labels.currentAge}</label><input type="number" class="form-control" data-proj-key="currentAge" value="${i.currentAge}" ${isLoading ? 'disabled' : ''}></div><div class="control-group"><label>${uiStrings.labels.retirementAge}</label><input type="number" class="form-control" data-proj-key="retirementAge" value="${i.retirementAge}" ${isLoading ? 'disabled' : ''}></div><div class="control-group"><label>${uiStrings.labels.lifeExpectancy}</label><input type="number" class="form-control" data-proj-key="lifeExpectancy" value="${i.lifeExpectancy}" ${isLoading ? 'disabled' : ''}></div><div class="control-group"><label>${uiStrings.labels.annualSavings}</label><input type="number" class="form-control" data-proj-key="annualSavings" value="${i.annualSavings}" ${isLoading ? 'disabled' : ''}></div><div class="control-group"><label>${uiStrings.labels.savingsIncrease}</label><input type="number" class="form-control" data-proj-key="savingsIncrease" value="${i.savingsIncrease}" ${isLoading ? 'disabled' : ''}></div><div class="control-group"><label>${uiStrings.labels.expectedInflation}</label><input type="number" class="form-control" data-proj-key="inflation" value="${i.inflation}" ${isLoading ? 'disabled' : ''}></div></div><div class="run-button-container"><button class="btn btn--primary" data-action="runProjections" ${isLoading ? 'disabled' : ''}>${uiStrings.runProjections}</button><div class="loader" style="${isLoading ? 'display: inline-block;' : ''}"></div></div></div>`;
+            let resultsHTML = '';
+            if (r) { resultsHTML = `<div class="card"><div class="section-header"><h2>Projections for ${r.name}</h2></div><h3 class="chart-title">Monte Carlo Cone of Probability</h3><div class="chart-container" style="height: 500px;"><canvas id="projectionsChart"></canvas></div></div><div class="card"><div data-component="projection-overview-table"></div></div><div class="card"><div data-component="projection-dividends-table"></div></div>`; }
+            dom.projectionsArea.innerHTML = setupHTML + resultsHTML;
+            if (r) { setTimeout(() => { const canvas = document.getElementById('projectionsChart'); if (!canvas) { log('Error: Projections chart canvas not found in DOM.', 'error'); return; } if (state.charts.projections) { state.charts.projections.destroy(); } state.charts.projections = new Chart(canvas.getContext('2d'), { type: 'line', data: { labels: r.labels, datasets: [{ label: 'Worst Case (10th Percentile)', data: r.worstCase, borderColor: 'rgba(229, 73, 73, 0.4)', backgroundColor: 'rgba(229, 73, 73, 0.1)', pointRadius: 0, tension: 0.2, fill: 'origin' }, { label: 'Best Case (90th Percentile)', data: r.bestCase, borderColor: 'rgba(0, 163, 117, 0.4)', backgroundColor: 'rgba(76, 111, 255, 0.15)', pointRadius: 0, tension: 0.2, fill: '-1' }, { label: 'Median Outcome (50th Percentile)', data: r.medianCase, borderColor: 'var(--c-primary)', borderWidth: 2.5, pointRadius: 0, tension: 0.2, fill: false }] }, options: commonOptions(false, v => `$${Math.round(v / 1000)}k`) }); document.querySelector('[data-component="projection-overview-table"]').innerHTML = createTableHTML(['Metric', 'Value'], [['Portfolio Balance at Retirement', `$${r.balanceAtRetirement.toLocaleString()}`], ['Total Contributions', `$${r.totalContributions.toLocaleString()}`], ['Total Growth', `$${(r.balanceAtRetirement - r.totalContributions).toLocaleString()}`], ['SWR (4% Rule) Income', `$${r.safeWithdrawalIncome.toLocaleString()} / year`],]); document.querySelector('[data-component="projection-dividends-table"]').innerHTML = createTableHTML(['Metric', 'Value'], [['Projected Annual Income at Retirement', `$${r.incomeAtRetirement.toLocaleString()}`], ['Projected Yield on Cost', `${r.projectedYoC.toFixed(2)} %`],]); }, 0); }
+        }
+        function createTableHTML(headers, rows, defs = {}) { const infoIcon = (metric) => defs[metric] ? `<span class="metric-label" title="${defs[metric]}">${metric} <svg class="info-icon" width="14" height="14" viewBox="0 0 16 16"><path fill="currentColor" d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/><path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533L8.93 6.588zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/></svg></span>` : metric; const head = `<thead><tr>${headers.map(h => `<th>${infoIcon(h)}</th>`).join('')}</tr></thead>`; const body = `<tbody>${rows.map(row => `<tr>${row.map(cell => `<td>${cell}</td>`).join('')}</tr>`).join('')}</tbody>`; return `<div class="table-container"><table>${head}${body}</table></div>`; }
+        function createHeatmapHTML(portfolio) { const years = state.results.labels.slice(0, -1).map(d => d.getFullYear()); const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']; let table = '<table><thead><tr><th>Year</th>' + months.map(m => `<th>${m}</th>`).join('') + '</tr></thead><tbody>'; years.forEach((year, i) => { table += `<tr><td><strong>${year}</strong></td>`; const rowData = portfolio.monthlyReturns[i]; rowData.forEach(cellData => { const absVal = Math.abs(cellData); const color = cellData >= 0 ? `rgba(0, 163, 117, ${Math.min(1, absVal / 8)})` : `rgba(229, 73, 73, ${Math.min(1, absVal / 8)})`; const textColor = absVal > 4 ? 'white' : 'var(--c-text-main)'; table += `<td style="background-color: ${color}; color: ${textColor};">${cellData.toFixed(1)}%</td>`; }); table += '</tr>'; }); table += '</tbody></table>'; return `<div class="table-container">${table}</div>`; }
+        function createCorrelationMatrixHTML(portfolios, matrix) { const portfolioNames = portfolios.map(p => p.name); let table = '<table><thead><tr><th></th>' + portfolioNames.map(name => `<th>${name}</th>`).join('') + '</tr></thead><tbody>'; matrix.forEach((row, i) => { table += `<tr><td><strong>${portfolioNames[i]}</strong></td>`; row.forEach((cell, j) => { const absVal = Math.abs(cell); const orange = [255, 160, 0]; const blue = [76, 111, 255]; const color = cell > 0 ? blue : orange; const bgColor = `rgba(${color[0]}, ${color[1]}, ${color[2]}, ${absVal})`; const textColor = absVal > 0.6 ? 'white' : 'var(--c-text-main)'; table += `<td style="background-color: ${i === j ? 'transparent' : bgColor}; color: ${textColor};">${cell.toFixed(2)}</td>`; }); table += '</tr>'; }); table += '</tbody></table>'; return `<div class="table-container">${table}</div>`; }
+        function setTableScrollHint() { document.querySelectorAll('.table-container').forEach(c => { const isScrollable = c.scrollWidth > c.clientWidth; c.classList.toggle('is-scrollable', isScrollable); }); }
+
+        const actions = {
+            goToStep(step) { step = parseInt(step); if (step > state.maxStep) state.maxStep = step; state.currentStep = step; window.scrollTo(0, 0); render('goToStep'); },
+            toggleDebug() { state.isDebugVisible = !state.isDebugVisible; render('toggleDebug'); },
+            toggleModal() { state.isModalVisible = !state.isModalVisible; render('toggleModal'); },
+            startOver() { logAction('startOver'); window.history.replaceState({}, '', window.location.pathname); window.location.reload(); },
+            exportPDF() { logAction('exportPDF'); window.print(); },
+            exportCSV() { if (!state.results) return; const all = [...state.results.portfolios, ...state.results.benchmarks]; const headers = ['Metric', ...all.map(p => p.name)]; const rows = [['CAGR', ...all.map(p => p.cagr.toFixed(2))], ['Volatility', ...all.map(p => p.volatility.toFixed(2))], ['Sharpe Ratio', ...all.map(p => p.sharpeRatio.toFixed(2))]]; const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n'); const link = document.createElement("a"); link.setAttribute("href", 'data:text/csv;charset=utf-8,' + encodeURI(csv)); link.setAttribute("download", "backtest_results.csv"); link.click(); },
+            addPortfolio() { const newId = Date.now(); state.portfolios.push({ id: newId, name: `Portfolio ${state.portfolios.length + 1}`, tickers: [{ id: newId + 1, symbol: 'VTI', allocation: 60 }, { id: newId + 2, symbol: 'BND', allocation: 40 }] }); logAction('addPortfolio', { newId }); render('addPortfolio'); },
+            removePortfolio: id => { logAction('removePortfolio', { id }); state.portfolios = state.portfolios.filter(p => p.id !== parseInt(id)); render('removePortfolio'); },
+            updatePortfolioName: (id, name) => { const p = state.portfolios.find(p => p.id === parseInt(id)); if (p) p.name = name; logAction('updatePortfolioName', { id, name }); },
+            addTicker(pId) { const p = state.portfolios.find(p => p.id === parseInt(pId)); if (p) { p.tickers.push({ id: Date.now(), symbol: '', allocation: 0 }); logAction('addTicker', { pId }); render('addTicker'); } },
+            removeTicker(pId, tId) { const p = state.portfolios.find(p => p.id === parseInt(pId)); if (p) { p.tickers = p.tickers.filter(t => t.id !== parseInt(tId)); logAction('removeTicker', { pId, tId }); render('removeTicker'); } },
+            updateTicker(pId, tId, field, value) { const p = state.portfolios.find(p => p.id === parseInt(pId)); if (p) { const t = p.tickers.find(t => t.id === parseInt(tId)); if (t) { t[field] = field === 'allocation' ? parseFloat(value) || 0 : value; logAction('updateTicker', { pId, tId, field, value }); validateAllPortfolios(); } } },
+            updateConfig: (key, value) => { if (typeof state.config[key] === 'boolean') { state.config[key] = !state.config[key]; } else { state.config[key] = value; } logAction('updateConfig', { key, value }); },
+            runBacktest() {
+                logAction('runBacktest', { config: state.config, portfolios: state.portfolios });
+                dom.runBacktestBtn.disabled = true; dom.runBacktestBtn.nextElementSibling.style.display = 'inline-block';
+                setTimeout(() => {
+                    const portfoliosWithData = state.portfolios.map(p => createMockData(p.name, p.tickers, state.config));
+                    const benchmarksWithData = [createMockData(state.config.benchmark1, [{ symbol: state.config.benchmark1, allocation: 100 }], state.config, true), createMockData(state.config.benchmark2, [{ symbol: state.config.benchmark2, allocation: 100 }], state.config, true)];
+                    state.results = { labels: Array.from({ length: 15 }, (_, i) => new Date(2011 + i, 0, 1)), portfolios: portfoliosWithData, benchmarks: benchmarksWithData, correlationMatrix: createCorrelationMatrix([...portfoliosWithData, ...benchmarksWithData]) };
+                    actions.goToStep(3); dom.runBacktestBtn.nextElementSibling.style.display = 'none'; log('Backtest complete.', 'success');
+                }, 1500);
+            },
+            runProjections() {
+                logAction('runProjections', { inputs: state.projections.inputs });
+                state.projections.isLoading = true; render('runProjections_start');
+                setTimeout(() => {
+                    const inputs = state.projections.inputs; const portfolio = state.results.portfolios.find(p => p.name === state.projections.selectedPortfolio);
+                    if (!portfolio) { log('Error: Selected portfolio for projection not found.', 'error'); state.projections.isLoading = false; render('runProjections_error'); return; }
+                    const yearsToRetire = inputs.retirementAge - inputs.currentAge; let currentBalance = portfolio.finalBalance; let totalContributions = 0;
+                    const medianData = [], bestData = [], worstData = [];
+                    const labels = Array.from({ length: yearsToRetire + 1 }, (_, i) => new Date().getFullYear() + i);
+                    for (let i = 0; i <= yearsToRetire; i++) {
+                        medianData.push(currentBalance); bestData.push(currentBalance * (1 + (Math.random() * i / (yearsToRetire * 5)))); worstData.push(currentBalance * (1 - (Math.random() * i / (yearsToRetire * 5))));
+                        let contribution = inputs.annualSavings * Math.pow(1 + (inputs.savingsIncrease / 100), i);
+                        totalContributions += contribution; currentBalance += contribution;
+                        currentBalance *= (1 + (portfolio.cagr / 100) + (Math.random() - 0.5) * (portfolio.volatility / 100));
+                    }
+                    const balanceAtRetirement = medianData[medianData.length - 1];
+                    state.projections.results = { name: portfolio.name, labels, medianCase: medianData, bestCase: bestData, worstCase: worstData, balanceAtRetirement, totalContributions: portfolio.totalInvested + totalContributions, safeWithdrawalIncome: balanceAtRetirement * 0.04, incomeAtRetirement: portfolio.incomeLast12Mo * Math.pow(1.05, yearsToRetire), projectedYoC: (portfolio.incomeLast12Mo * Math.pow(1.05, yearsToRetire)) / (portfolio.totalInvested + totalContributions) * 100 };
+                    state.projections.isLoading = false; log('Projections complete.', 'success'); render('runProjections_complete');
+                }, 1000);
+            },
+            updateProjectionInput: (key, value) => { state.projections.inputs[key] = parseFloat(value) || 0; logAction('updateProjectionInput', { key, value }); },
+            selectProjectionPortfolio: (name) => { state.projections.selectedPortfolio = name; state.projections.results = null; render('selectProjectionPortfolio'); },
+            copyShareUrl(e) {
+                const url = dom.shareUrlInput.value;
+                navigator.clipboard.writeText(url).then(() => {
+                    const btn = e.target.closest('button');
+                    btn.textContent = uiStrings.copied;
+                    btn.style.backgroundColor = 'var(--c-success)';
+                    dom.copyAnnouncer.textContent = 'Copied to clipboard!';
+                    setTimeout(() => {
+                        btn.textContent = uiStrings.copyUrl;
+                        btn.style.backgroundColor = 'var(--c-primary)';
+                        dom.copyAnnouncer.textContent = '';
+                    }, 2000);
+                }).catch(err => { log('Failed to copy URL: ' + err, 'error'); dom.copyAnnouncer.textContent = 'Failed to copy URL.'; });
+            },
+            generateShareUrl() {
+                try {
+                    const stateToSave = { config: state.config, portfolios: state.portfolios };
+                    const jsonString = JSON.stringify(stateToSave);
+                    const compressed = LZString.compressToEncodedURIComponent(jsonString);
+                    return `${window.location.origin}${window.location.pathname}?data=${compressed}`;
+                } catch (e) { log('Error generating share URL: ' + e.message, 'error'); return 'Could not generate URL.'; }
+            },
+            hydrateFromUrl() {
+                try {
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const data = urlParams.get('data');
+                    if (data) {
+                        log('Hydrating state from URL...');
+                        const decompressed = LZString.decompressFromEncodedURIComponent(data);
+                        const loadedState = JSON.parse(decompressed);
+                        if (loadedState.config && loadedState.portfolios) {
+                            state.config = loadedState.config;
+                            state.portfolios = loadedState.portfolios;
+                            log('State successfully hydrated.', 'success');
+                        }
+                    }
+                } catch (e) { log('Error hydrating from URL: ' + e.message, 'error'); }
+            }
+        };
+        function validateAllPortfolios() { if (state.portfolios.length === 0) { dom.runBacktestBtn.disabled = true; return; } let allValid = true; dom.portfoliosContainer.querySelectorAll('.portfolio-card').forEach(card => { const pId = parseInt(card.dataset.id); const p = state.portfolios.find(p => p.id === pId); const total = p.tickers.reduce((sum, t) => sum + t.allocation, 0); const totalEl = card.querySelector('.portfolio-allocation-total'); totalEl.textContent = `Total: ${total.toFixed(0)}%`; totalEl.classList.toggle('valid', total === 100); totalEl.classList.toggle('invalid', total !== 100); if (total !== 100) allValid = false; }); dom.runBacktestBtn.disabled = !allValid; }
+
+        dom.app.addEventListener('click', e => {
+            const target = e.target.closest('[data-action], .step'); if (!target) return;
+            const action = target.dataset.action;
+            const step = target.closest('.step'); if (step && step.classList.contains('locked')) return logAction('clickBlocked', { reason: 'Step is locked' });
+            const actionMap = { goToStep: () => actions.goToStep(target.dataset.step), toggleDebug: () => actions.toggleDebug(), toggleModal: () => actions.toggleModal(), copyShareUrl: () => actions.copyShareUrl(e), startOver: () => actions.startOver(), exportPDF: () => actions.exportPDF(), exportCSV: () => actions.exportCSV(), addPortfolio: () => actions.addPortfolio(), removePortfolio: () => actions.removePortfolio(target.dataset.id), addTicker: () => actions.addTicker(target.dataset.id), removeTicker: () => { const row = target.closest('.ticker-input-row'); actions.removeTicker(row.dataset.portfolioId, row.dataset.id); }, runBacktest: () => actions.runBacktest(), runProjections: () => actions.runProjections() };
+            if (actionMap[action]) actionMap[action]();
+            else if (step) actions.goToStep(step.dataset.step);
+        });
+        dom.app.addEventListener('input', e => { const target = e.target; const action = target.dataset.action; const configKey = target.dataset.configKey; const projKey = target.dataset.projKey; if (action === 'updatePortfolioName') { actions.updatePortfolioName(target.dataset.id, target.value); } else if (action === 'updateTicker') { const row = target.closest('.ticker-input-row'); actions.updateTicker(row.dataset.portfolioId, row.dataset.id, target.dataset.field, target.value); } else if (configKey) { actions.updateConfig(configKey, target.type === 'checkbox' ? target.checked : target.value); } else if (projKey) { actions.updateProjectionInput(projKey, target.value); } else if (target.dataset.action === 'selectProjectionPortfolio') { actions.selectProjectionPortfolio(target.value); } });
+
+        // --- APP INITIALIZATION ---
+        log('App Initializing...');
+        actions.hydrateFromUrl();
+        if (state.portfolios.length === 0) {
+            actions.addPortfolio();
+        }
+        render('init');
+        log('App Initialized.', 'success');
+    });
+    </script>
+</body>
+</html>
