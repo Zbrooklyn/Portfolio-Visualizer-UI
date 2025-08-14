@@ -3,13 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Portfolio Backtester v31.0 (Adaptive Layout)</title>
+    <title>Portfolio Backtester v32.0 (Final)</title>
     
     <!-- Chart.js Libraries & Plugins -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom"></script>
     <!-- LZ-String for URL Compression -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.4.4/lz-string.min.js"></script>
 
@@ -24,7 +23,8 @@
         --c-primary: #4C6FFF; --c-primary-hover: #3a5ce0; --c-primary-bg: rgba(76, 111, 255, 0.1);
         --c-border: #DFE1E6; --c-bg-main: #F4F5F7; --c-bg-card: #ffffff; --c-bg-alt: #FAFBFC;
         --c-text-main: #253858; --c-text-light: #6B778C;
-        --c-success: #00A375; --c-danger: #E54949; --c-danger-hover: #c93e3e;
+        --c-success: #00A375; --c-success-hover: #008a62;
+        --c-danger: #E54949; --c-danger-hover: #c93e3e;
         --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
         --fs-sm: 0.875rem; --fs-xs: 0.75rem;
         --fs-h1: clamp(1.4rem, 4vw, 1.8rem); --fs-h2: clamp(1.2rem, 3vw, 1.5rem);
@@ -77,8 +77,11 @@
       .btn:disabled { background-color: #dfe1e6; color: #a5adba; cursor: not-allowed; }
       .btn--secondary { background-color: #f4f5f7; color: var(--c-text-main); border-color: #dfe1e6; }
       .btn--secondary:hover:not(:disabled) { background-color: #e6e9ee; }
+      .btn--secondary.active { background-color: var(--c-primary-bg); color: var(--c-primary); border-color: var(--c-primary); font-weight: 600; }
       .btn--danger { background-color: var(--c-danger); color: white; }
       .btn--danger:hover:not(:disabled) { background-color: var(--c-danger-hover); }
+      .btn--success { background-color: var(--c-success); color: white; }
+      .btn--success:hover:not(:disabled) { background-color: var(--c-success-hover); }
       .btn-icon { background: none; border: none; padding: var(--space-sm); cursor: pointer; color: var(--c-text-light); border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; }
       .btn-icon:hover { background-color: var(--c-bg-alt); color: var(--c-text-main); }
       .btn-icon.danger:hover { background-color: rgba(229, 73, 73, 0.1); color: var(--c-danger); }
@@ -104,9 +107,19 @@
 
       .control-group { display: flex; flex-direction: column; gap: var(--space-xs); }
       .checkbox-group { display: flex; align-items: center; gap: var(--space-sm); margin-top: var(--space-md); }
-      .table-container { overflow-x: auto; position: relative; }
-      .table-container.is-scrollable::after { content: ''; position: absolute; top: 0; right: 0; bottom: 0; width: 30px; background: linear-gradient(to right, transparent, rgba(0,0,0,0.05)); pointer-events: none; }
-      table { border-collapse: collapse; width: 100%; margin-top: var(--space-md); }
+      .table-wrapper { position: relative; margin-top: var(--space-md); }
+      .table-wrapper.is-scrollable::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        width: 30px;
+        background: linear-gradient(to right, transparent, rgba(0,0,0,0.05));
+        pointer-events: none;
+      }
+      .table-container { overflow-x: auto; }
+      table { border-collapse: collapse; width: 100%; }
       th, td { border: 1px solid var(--c-border); padding: 8px 12px; text-align: right; font-size: var(--fs-sm); white-space: nowrap; }
       th { background: var(--c-bg-alt); font-weight: 600; text-align: center; }
       tbody tr:nth-child(even) { background-color: var(--c-bg-alt); }
@@ -117,7 +130,7 @@
       .app-section { display: none; position: relative; z-index: 1; }
       .app-section.active { display: block; animation: fadeIn 0.4s ease-out; }
       @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-      .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-lg); padding-bottom: var(--space-md); border-bottom: 1px solid var(--c-border); }
+      .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-lg); padding-bottom: var(--space-md); border-bottom: 1px solid var(--c-border); flex-wrap: wrap; gap: var(--space-md); }
       .navigation-buttons { display: flex; justify-content: space-between; align-items: center; margin-top: var(--space-xl); flex-wrap: wrap; gap: var(--space-md); }
       .nav-group { display: flex; gap: var(--space-sm); flex-wrap: wrap; }
       .controls-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: var(--space-lg) var(--space-md); }
@@ -171,6 +184,18 @@
       #section-2 .portfolio-allocation-total.valid { color: var(--c-success); background-color: rgba(0, 163, 117, 0.1); }
       #section-2 .empty-state { text-align: center; padding: var(--space-xl); border: 2px dashed var(--c-border); border-radius: var(--border-radius); }
       
+      .chart-controls { display: flex; flex-wrap: wrap; gap: var(--space-sm); justify-content: center; align-items: center; margin-top: var(--space-md); }
+      .chart-controls .btn { padding: 4px 12px; font-size: var(--fs-xs); }
+      .reset-zoom-btn { font-size: var(--fs-xs); color: var(--c-primary); background: none; border: none; cursor: pointer; margin-left: var(--space-md); }
+      .reset-zoom-btn:hover { text-decoration: underline; }
+      
+      [data-component="holdings-tables-container"] h3 {
+        margin-top: var(--space-xl);
+      }
+      [data-component="holdings-tables-container"] h3:first-child {
+        margin-top: 0;
+      }
+
       .run-button-container { display: flex; justify-content: center; align-items: center; gap: var(--space-md); margin: var(--space-xl) 0; }
       .loader { display: none; width: 24px; height: 24px; border: 3px solid var(--c-primary); border-bottom-color: transparent; border-radius: 50%; animation: rotation 1s linear infinite; }
       @keyframes rotation { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
@@ -190,8 +215,31 @@
       #section-1 .card { padding: var(--space-xl); }
       #section-1 .controls-grid { gap: var(--space-xl) var(--space-lg); }
 
-      .chart-container { position: relative; width: 100%; height: 400px; margin-top: var(--space-md); }
+      .chart-container { position: relative; width: 100%; height: 400px; }
       
+      #chartjs-tooltip {
+          opacity: 0;
+          position: absolute;
+          background: var(--c-text-main);
+          color: white;
+          border-radius: var(--border-radius);
+          padding: var(--space-md);
+          pointer-events: none;
+          transition: opacity 0.1s ease;
+          box-shadow: var(--shadow-md);
+          font-size: var(--fs-sm);
+          z-index: 10;
+      }
+      #chartjs-tooltip table { margin: 0; border: none; }
+      #chartjs-tooltip th, #chartjs-tooltip td { border: none; padding: var(--space-xs) 0; }
+      #chartjs-tooltip .tooltip-swatch {
+          display: inline-block;
+          width: 10px;
+          height: 10px;
+          border-radius: 50%;
+          margin-right: var(--space-sm);
+      }
+
       @media (min-width: 1024px) {
         body {
           padding: var(--space-lg) var(--space-xl);
@@ -235,7 +283,7 @@
         </header>
         <nav class="stepper-nav card" data-component="stepper"></nav>
         <section id="section-1" class="app-section"><div class="card"><div class="section-header"><h2 data-uitext="setupTitle"></h2></div><div class="controls-grid" data-component="config-form"></div><div class="navigation-buttons"><span class="nav-group"></span><div class="nav-group"><button class="btn btn--primary" data-action="goToStep" data-step="2" data-uitext="nextPortfolios"></button></div></div></div></section>
-        <section id="section-2" class="app-section"><div class="card"><div class="section-header"><h2 data-uitext="portfoliosTitle"></h2></div><div data-component="portfolios-container"></div><div style="margin-top: var(--space-lg);"><button class="btn btn--secondary" data-action="addPortfolio"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="flex-shrink: 0;"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg><span data-uitext="addPortfolio"></span></button></div><div class="run-button-container"><button id="run-backtest-btn" class="btn btn--primary" style="font-size: 1rem;" data-action="runBacktest" data-uitext="runBacktest" disabled></button><div class="loader"></div></div></div></section>
+        <section id="section-2" class="app-section"><div class="card"><div class="section-header"><h2 data-uitext="portfoliosTitle"></h2></div><div data-component="portfolios-container"></div><div style="margin-top: var(--space-lg);"><button class="btn btn--secondary" data-action="addPortfolio"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="flex-shrink: 0;"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg><span data-uitext="addPortfolio"></span></button></div><div class="run-button-container"><button id="run-backtest-btn" class="btn btn--primary" style="font-size: 1rem;" data-action="runBacktest" data-uitext="runBacktest" disabled></button><div class="loader"></div><span id="run-announcer" class="visually-hidden" aria-live="assertive" role="status"></span></div></div></section>
         <section id="section-3" class="app-section"><div data-component="results-area"></div><div class="navigation-buttons"><div class="nav-group"><button class="btn btn--secondary" data-action="goToStep" data-step="2" data-uitext="back"></button><button class="btn btn--secondary" data-action="startOver" data-uitext="startOver"></button></div><div class="nav-group"><button class="btn btn--secondary" data-action="toggleModal" data-modal="share" data-uitext="share"></button><button class="btn btn--secondary" data-action="exportCSV" data-uitext="exportCSV"></button><button class="btn btn--secondary" data-action="exportPDF" data-uitext="exportPDF"></button><button class="btn btn--primary" data-action="goToStep" data-step="4" data-uitext="nextProjections"></button></div></div></section>
         <section id="section-4" class="app-section"><div data-component="projections-area"></div><div class="navigation-buttons"><div class="nav-group"><button class="btn btn--secondary" data-action="goToStep" data-step="3" data-uitext="backToResults"></button></div><span class="nav-group"></span></div></section>
     </main>
@@ -278,7 +326,7 @@
     // --- UI TEXT STRINGS (for i18n preparation) ---
     const uiStrings = {
         mainTitle: 'Portfolio Backtester',
-        version: 'v31.0 (Adaptive Layout)',
+        version: 'v32.0 (Final)',
         toggleDebug: 'Toggle Debug',
         setupTitle: 'Backtest Setup',
         portfoliosTitle: 'Configure Portfolios',
@@ -358,12 +406,58 @@
 
     // --- MAIN APP LOGIC ---
     document.addEventListener('DOMContentLoaded', () => {
-        Chart.register(ChartZoom);
-
-        let state = { currentStep: 1, maxStep: 1, isDebugVisible: false, modal: { share: false, confirm: false }, config: { startDate: '2011-10-20', endDate: '2025-08-13', initialInvestment: 100000, contributionAmount: 400, contributionFrequency: 'weekly', rebalanceFrequency: 'annually', reinvestDividends: true, riskFreeRate: 0, dividendTax: 0, cgtTax: 0, benchmark1: 'SPY', benchmark2: 'QQQ' }, portfolios: [], results: null, charts: {}, projections: { inputs: { currentAge: 30, retirementAge: 65, lifeExpectancy: 95, inflation: 2.5, annualSavings: 15000, savingsIncrease: 2 }, results: null, selectedPortfolio: '', isLoading: false } };
-        const dom = { app: document.getElementById('app-container'), stepper: document.querySelector('[data-component="stepper"]'), sections: document.querySelectorAll('.app-section'), configForm: document.querySelector('[data-component="config-form"]'), portfoliosContainer: document.querySelector('[data-component="portfolios-container"]'), resultsArea: document.querySelector('[data-component="results-area"]'), projectionsArea: document.querySelector('[data-component="projections-area"]'), runBacktestBtn: document.getElementById('run-backtest-btn'), debugWindow: document.getElementById('debug-window'), shareModal: document.getElementById('share-modal-overlay'), confirmModal: document.getElementById('confirm-modal-overlay'), shareUrlInput: document.querySelector('[data-component="share-url-input"]'), portfolioTemplate: document.getElementById('portfolio-template'), tickerTemplate: document.getElementById('ticker-template'), copyAnnouncer: document.getElementById('copy-announcer') };
+        let state = { currentStep: 1, maxStep: 1, isDebugVisible: false, modal: { share: false, confirm: false }, config: { startDate: '2011-10-20', endDate: '2025-08-13', initialInvestment: 100000, contributionAmount: 400, contributionFrequency: 'weekly', rebalanceFrequency: 'annually', reinvestDividends: true, riskFreeRate: 0, dividendTax: 0, cgtTax: 0, benchmark1: 'SPY', benchmark2: 'QQQ' }, portfolios: [], results: { activeZoomRange: 'all' }, charts: {}, projections: { inputs: { currentAge: 30, retirementAge: 65, lifeExpectancy: 95, inflation: 2.5, annualSavings: 15000, savingsIncrease: 2 }, results: null, selectedPortfolio: '', isLoading: false } };
+        const dom = { app: document.getElementById('app-container'), stepper: document.querySelector('[data-component="stepper"]'), sections: document.querySelectorAll('.app-section'), configForm: document.querySelector('[data-component="config-form"]'), portfoliosContainer: document.querySelector('[data-component="portfolios-container"]'), resultsArea: document.querySelector('[data-component="results-area"]'), projectionsArea: document.querySelector('[data-component="projections-area"]'), runBacktestBtn: document.getElementById('run-backtest-btn'), debugWindow: document.getElementById('debug-window'), shareModal: document.getElementById('share-modal-overlay'), confirmModal: document.getElementById('confirm-modal-overlay'), shareUrlInput: document.querySelector('[data-component="share-url-input"]'), portfolioTemplate: document.getElementById('portfolio-template'), tickerTemplate: document.getElementById('ticker-template'), copyAnnouncer: document.getElementById('copy-announcer'), runAnnouncer: document.getElementById('run-announcer') };
         const log = (message, type = 'info') => { if (!dom.debugWindow) return; const p = document.createElement('p'); p.innerHTML = `<strong>[${new Date().toLocaleTimeString()}]</strong> ${message}`; const typeMap = { error: 'log-error', success: 'log-success', action: 'log-action' }; if (typeMap[type]) p.className = typeMap[type]; dom.debugWindow.appendChild(p); dom.debugWindow.scrollTop = dom.debugWindow.scrollHeight; };
         const logAction = (name, payload) => { let payloadString = ''; if (payload) { payloadString = `<pre>${JSON.stringify(payload, null, 2)}</pre>`; } log(`ACTION: ${name} ${payload ? '| Payload:' : ''} ${payloadString}`, 'action'); }
+        
+        const getOrCreateTooltip = (chart) => {
+            let tooltipEl = chart.canvas.parentNode.querySelector('div#chartjs-tooltip');
+            if (!tooltipEl) {
+                tooltipEl = document.createElement('div');
+                tooltipEl.id = 'chartjs-tooltip';
+                tooltipEl.innerHTML = '<table></table>';
+                chart.canvas.parentNode.appendChild(tooltipEl);
+            }
+            return tooltipEl;
+        };
+
+        const externalTooltipHandler = (context) => {
+            const { chart, tooltip } = context;
+            const tooltipEl = getOrCreateTooltip(chart);
+
+            if (tooltip.opacity === 0) {
+                tooltipEl.style.opacity = 0;
+                return;
+            }
+
+            if (tooltip.body) {
+                const titleLines = tooltip.title || [];
+                const bodyLines = tooltip.body.map(b => b.lines);
+
+                let innerHtml = '<thead>';
+                titleLines.forEach(function(title) {
+                    innerHtml += '<tr><th>' + title + '</th></tr>';
+                });
+                innerHtml += '</thead><tbody>';
+
+                bodyLines.forEach(function(body, i) {
+                    const colors = tooltip.labelColors[i];
+                    const style = 'background:' + colors.borderColor; // Use borderColor for swatch
+                    const swatch = '<span class="tooltip-swatch" style="' + style + '"></span>';
+                    innerHtml += '<tr><td>' + swatch + body + '</td></tr>';
+                });
+                innerHtml += '</tbody>';
+
+                let tableRoot = tooltipEl.querySelector('table');
+                tableRoot.innerHTML = innerHtml;
+            }
+
+            const { offsetLeft: positionX, offsetTop: positionY } = chart.canvas;
+            tooltipEl.style.opacity = 1;
+            tooltipEl.style.left = positionX + tooltip.caretX + 'px';
+            tooltipEl.style.top = positionY + tooltip.caretY + 'px';
+        };
 
         function render(triggeringAction = 'unknown') { log(`Render triggered by: ${triggeringAction}`); renderUIText(); renderDebug(); renderModals(); renderStepper(); renderSections(); renderConfigForm(); renderPortfolios(); renderResults(); renderProjections(); setTableScrollHint(); }
         function renderUIText(container = document) { container.querySelectorAll('[data-uitext]').forEach(el => { const key = el.dataset.uitext; if(uiStrings[key]) { el.textContent = uiStrings[key]; } });}
@@ -383,30 +477,90 @@
         function renderConfigForm() { if (state.currentStep !== 1) return; const c = state.config; const l = uiStrings.labels; dom.configForm.innerHTML = `<div class="control-group"><label>${l.startDate}</label><input type="date" class="form-control" data-config-key="startDate" value="${c.startDate}"></div> <div class="control-group"><label>${l.endDate}</label><input type="date" class="form-control" data-config-key="endDate" value="${c.endDate}"></div> <div class="control-group"><label>${l.initialInvestment}</label><input type="number" class="form-control" data-config-key="initialInvestment" value="${c.initialInvestment}"></div> <div class="control-group"><label>${l.contributionAmount}</label><input type="number" class="form-control" data-config-key="contributionAmount" value="${c.contributionAmount}"></div> <div class="control-group"><label>${l.contributionFrequency}</label><select class="form-control" data-config-key="contributionFrequency" value="${c.contributionFrequency}"><option>Weekly</option><option>Monthly</option></select></div> <div class="control-group"><label>${l.rebalanceFrequency}</label><select class="form-control" data-config-key="rebalanceFrequency" value="${c.rebalanceFrequency}"><option>Annually</option><option>Quarterly</option></select></div> <div class="control-group"><label>${l.benchmark1}</label><input type="text" class="form-control" data-config-key="benchmark1" value="${c.benchmark1}"></div> <div class="control-group"><label>${l.benchmark2}</label><input type="text" class="form-control" data-config-key="benchmark2" value="${c.benchmark2}"></div> <div class="control-group"><label>${l.dividendTax}</label><input type="number" class="form-control" data-config-key="dividendTax" value="${c.dividendTax}"></div> <div class="control-group"><label>${l.cgtTax}</label><input type="number" class="form-control" data-config-key="cgtTax" value="${c.cgtTax}"></div> <div class="checkbox-group"><input type="checkbox" id="reinvest-dividends" data-config-key="reinvestDividends" ${c.reinvestDividends ? 'checked' : ''}><label for="reinvest-dividends">${l.reinvestDividends}</label></div>`; }
         function renderPortfolios() { if (state.currentStep !== 2) return; if (state.portfolios.length === 0) { dom.portfoliosContainer.innerHTML = `<div class="empty-state"><h3>${uiStrings.emptyPortfolioStateTitle}</h3><p>${uiStrings.emptyPortfolioStateSubtitle}</p></div>`; validateAllPortfolios(); return; } dom.portfoliosContainer.innerHTML = ''; state.portfolios.forEach(p => { const pNode = dom.portfolioTemplate.content.cloneNode(true); pNode.querySelector('.portfolio-card').dataset.id = p.id; pNode.querySelector('.portfolio-name-input').value = p.name; pNode.querySelector('.portfolio-name-input').dataset.id = p.id; pNode.querySelector('[data-action="removePortfolio"]').dataset.id = p.id; pNode.querySelector('[data-action="addTicker"]').dataset.id = p.id; const tickersContainer = pNode.querySelector('[data-component="tickers-container"]'); p.tickers.forEach(t => { const tNode = dom.tickerTemplate.content.cloneNode(true); const row = tNode.querySelector('.ticker-input-row'); row.dataset.id = t.id; row.dataset.portfolioId = p.id; tNode.querySelector('[data-field="symbol"]').value = t.symbol; tNode.querySelector('[data-field="allocation"]').value = t.allocation; tickersContainer.appendChild(tNode); }); renderUIText(pNode); dom.portfoliosContainer.appendChild(pNode); }); validateAllPortfolios(); }
         function renderResults() {
-            if (state.currentStep !== 3 || !state.results) { dom.resultsArea.innerHTML = ''; return; }
+            if (state.currentStep !== 3 || !state.results.portfolios) { dom.resultsArea.innerHTML = ''; return; }
             Object.values(state.charts).forEach(c => { if (c && c.destroy) c.destroy() });
             const allPortfolios = [...state.results.portfolios, ...state.results.benchmarks];
+            
+            const zoomRanges = ['30D', '90D', '1Y', '3Y', '5Y', '10Y', 'All'];
+            const zoomButtonsHTML = zoomRanges.map(r => `<button class="btn btn--secondary ${state.results.activeZoomRange.toUpperCase() === r ? 'active' : ''}" data-action="setZoom" data-range="${r}">${r}</button>`).join('');
+            const resetZoomBtnHTML = `<button class="reset-zoom-btn ${state.results.activeZoomRange.toUpperCase() === 'ALL' ? 'hidden' : ''}" data-action="setZoom" data-range="All">Reset Zoom</button>`;
+
             dom.resultsArea.innerHTML = `<div class="results-grid">
-                <div class="card grid-col-span-2"><h2 class="section-header">Performance</h2><div class="chart-container"><canvas id="growthChart"></canvas></div><h3 class="chart-title">Annual Returns</h3><div class="chart-container"><canvas id="annualReturnsChart"></canvas></div></div>
+                <div class="card grid-col-span-2">
+                    <h2 class="section-header">Performance</h2>
+                    <div class="chart-container"><canvas id="growthChart"></canvas></div>
+                    <div class="chart-controls">${zoomButtonsHTML}${resetZoomBtnHTML}</div>
+                    <h3 class="chart-title">Annual Returns</h3>
+                    <div class="chart-container"><canvas id="annualReturnsChart"></canvas></div>
+                </div>
+                <div class="card grid-col-span-2"><h2 class="section-header">Capital Snapshot</h2><div data-component="capital-snapshot-table"></div></div>
                 <div class="card"><h2 class="section-header">Portfolio Efficiency</h2><div class="chart-container" style="height: 450px;"><canvas id="efficientFrontierChart"></canvas></div></div>
                 <div class="card"><h2 class="section-header">Drawdowns</h2><div class="chart-container" style="height: 300px;"><canvas id="drawdownsChart"></canvas></div><div data-component="drawdowns-table"></div></div>
-                <div class="card grid-col-span-2"><h2 class="section-header">Capital Snapshot</h2><div data-component="capital-snapshot-table"></div></div>
                 <div class="card"><h2 class="section-header">Risk & Volatility</h2><div data-component="risk-table"></div></div>
                 <div class="card"><h2 class="section-header">Consistency</h2><div data-component="consistency-table"></div></div>
-                <div class="card grid-col-span-2"><h2 class="section-header">Correlation Matrix</h2><div data-component="correlation-matrix-container" style="padding: 0 var(--space-sm);"></div></div>
                 <div class="card"><h2 class="section-header">Asset Allocation</h2><div data-component="allocation-table"></div></div>
                 <div class="card"><h2 class="section-header">Income & Yield</h2><div data-component="income-table"></div></div>
-                <div class="card"><h2 class="section-header">Costs & Efficiency</h2><div data-component="costs-table"></div></div>
-                <div class="card"><h2 class="section-header">Holdings Breakdown</h2><div data-component="holdings-tables-container"></div></div>
+                <div class="card grid-col-span-2"><h2 class="section-header">Costs & Efficiency</h2><div data-component="costs-table"></div></div>
+                <div class="card grid-col-span-2"><h2 class="section-header">Holdings Breakdown</h2><div data-component="holdings-tables-container"></div></div>
+                <div class="card grid-col-span-2"><h2 class="section-header">Correlation Matrix</h2><div data-component="correlation-matrix-container" style="padding: 0 var(--space-sm);"></div></div>
                 <div class="card grid-col-span-2"><h2 class="section-header">Monthly Performance</h2><div data-component="monthly-heatmap-container"></div></div>
             </div>`;
+            
             const portfolioColors = ['#4C6FFF', '#00A375', '#E54949', '#7E57C2', '#FFA000'];
-            const commonOptions = (isTime = false, yLabelCallback) => ({ responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false }, plugins: { legend: { position: 'bottom' }, tooltip: { backgroundColor: '#253858', titleFont: { weight: 'bold' }, bodyFont: { family: "'Inter', sans-serif" }, cornerRadius: 4 }, zoom: { pan: { enabled: isTime, mode: 'x' }, zoom: { wheel: { enabled: isTime }, mode: 'x' } } }, scales: { x: isTime ? { type: 'time', time: { unit: 'year' }, grid: { color: 'rgba(0,0,0,0.05)' } } : { grid: { color: 'rgba(0,0,0,0.05)' } }, y: { ticks: { callback: yLabelCallback }, grid: { color: 'rgba(0,0,0,0.05)' } } } });
-            state.charts.growth = new Chart(document.getElementById('growthChart').getContext('2d'), { type: 'line', data: { labels: state.results.labels, datasets: allPortfolios.map((p, i) => ({ label: p.name, data: p.growth, borderColor: portfolioColors[i % 5], tension: 0.1, pointRadius: 0, fill: true, backgroundColor: (ctx) => { const gradient = ctx.chart.ctx.createLinearGradient(0, 0, 0, ctx.chart.height); const color = portfolioColors[i % 5]; gradient.addColorStop(0, `${color}40`); gradient.addColorStop(1, `${color}00`); return gradient; } })) }, options: commonOptions(true, v => `$${Math.round(v / 1000)}k`) });
-            state.charts.annualReturns = new Chart(document.getElementById('annualReturnsChart').getContext('2d'), { type: 'bar', data: { labels: state.results.labels.slice(1).map(d => d.getFullYear()), datasets: allPortfolios.map((p, i) => ({ label: p.name, data: p.annualReturns, backgroundColor: portfolioColors[i % 5] })) }, options: commonOptions(false, v => `${v.toFixed(0)}%`) });
-            state.charts.efficientFrontier = new Chart(document.getElementById('efficientFrontierChart').getContext('2d'), { type: 'scatter', data: { datasets: allPortfolios.map((p, i) => ({ label: p.name, data: [{ x: p.volatility, y: p.cagr }], backgroundColor: portfolioColors[i % 5], pointRadius: 8, pointHoverRadius: 12 })) }, options: { ...commonOptions(), plugins: { legend: { position: 'bottom' }, tooltip: { ...commonOptions().plugins.tooltip, callbacks: { label: (c) => `${c.dataset.label}: (${c.parsed.x.toFixed(1)}% Risk, ${c.parsed.y.toFixed(1)}% Return)` } } }, scales: { x: { title: { display: true, text: 'Risk (Annualized Volatility %)' }, grid: { color: 'rgba(0,0,0,0.05)' } }, y: { title: { display: true, text: 'Return (CAGR %)' }, ticks: { callback: v => `${v.toFixed(1)}%` }, grid: { color: 'rgba(0,0,0,0.05)' } } } } });
-            state.charts.drawdowns = new Chart(document.getElementById('drawdownsChart').getContext('2d'), { type: 'line', data: { labels: state.results.labels, datasets: allPortfolios.map((p, i) => ({ label: p.name, data: p.drawdownHistory, borderColor: portfolioColors[i % 5], pointRadius: 0, tension: 0.2 })) }, options: { ...commonOptions(true, v => `${v}%`), plugins: { ...commonOptions(true).plugins, tooltip: { ...commonOptions(true).plugins.tooltip, callbacks: { label: (c) => `${c.dataset.label}: ${c.parsed.y.toFixed(1)}%` } } } } });
+            const commonOptions = (isTime = false, yLabelCallback) => ({ responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false }, plugins: { legend: { position: 'bottom' }, tooltip: { enabled: false } }, scales: { x: isTime ? { type: 'time', time: { unit: 'year' }, grid: { color: 'rgba(0,0,0,0.05)' } } : { grid: { color: 'rgba(0,0,0,0.05)' } }, y: { ticks: { callback: yLabelCallback }, grid: { color: 'rgba(0,0,0,0.05)' } } } });
 
+            const growthChartDatasets = allPortfolios.map((p, i) => {
+                const color = portfolioColors[i % 5];
+                const isBenchmark = i >= state.results.portfolios.length;
+                return {
+                    label: p.name, data: p.growth, borderColor: color,
+                    borderWidth: isBenchmark ? 1.5 : 3,
+                    pointRadius: 0,
+                    tension: 0.4,
+                    fill: !isBenchmark,
+                    borderDash: isBenchmark ? [5, 5] : [],
+                    backgroundColor: (ctx) => {
+                        const gradient = ctx.chart.ctx.createLinearGradient(0, 0, 0, ctx.chart.height);
+                        gradient.addColorStop(0, `${color}40`);
+                        gradient.addColorStop(1, `${color}00`);
+                        return gradient;
+                    }
+                };
+            });
+
+            state.charts.growth = new Chart(document.getElementById('growthChart').getContext('2d'), {
+                type: 'line',
+                data: { labels: state.results.labels, datasets: growthChartDatasets },
+                options: {
+                    ...commonOptions(true, v => `$${Math.round(v / 1000)}k`),
+                    plugins: {
+                        legend: {
+                            onHover: (event, legendItem, legend) => {
+                                legend.chart.data.datasets.forEach((d, i) => {
+                                    const meta = legend.chart.getDatasetMeta(i);
+                                    meta.hidden = i !== legendItem.datasetIndex;
+                                });
+                                legend.chart.update();
+                            },
+                            onLeave: (event, legendItem, legend) => {
+                                legend.chart.data.datasets.forEach((d, i) => {
+                                    const meta = legend.chart.getDatasetMeta(i);
+                                    meta.hidden = false;
+                                });
+                                legend.chart.update();
+                            }
+                        },
+                        tooltip: { enabled: false, external: externalTooltipHandler, position: 'nearest' }
+                    }
+                }
+            });
+            
+            actions.setZoom(state.results.activeZoomRange, true);
+
+            state.charts.annualReturns = new Chart(document.getElementById('annualReturnsChart').getContext('2d'), { type: 'bar', data: { labels: state.results.labels.slice(1).map(d => d.getFullYear()), datasets: allPortfolios.map((p, i) => ({ label: p.name, data: p.annualReturns, backgroundColor: portfolioColors[i % 5] })) }, options: { ...commonOptions(false, v => `${v.toFixed(0)}%`), plugins: { tooltip: {enabled: true, backgroundColor: '#253858'} } } });
+            state.charts.efficientFrontier = new Chart(document.getElementById('efficientFrontierChart').getContext('2d'), { type: 'scatter', data: { datasets: allPortfolios.map((p, i) => ({ label: p.name, data: [{ x: p.volatility, y: p.cagr }], backgroundColor: portfolioColors[i % 5], pointRadius: 8, pointHoverRadius: 12 })) }, options: { ...commonOptions(), plugins: { tooltip: { enabled: true, backgroundColor: '#253858', callbacks: { label: (c) => `${c.dataset.label}: (${c.parsed.x.toFixed(1)}% Risk, ${c.parsed.y.toFixed(1)}% Return)` } } }, scales: { x: { title: { display: true, text: 'Risk (Annualized Volatility %)' }, grid: { color: 'rgba(0,0,0,0.05)' } }, y: { title: { display: true, text: 'Return (CAGR %)' }, ticks: { callback: v => `${v.toFixed(1)}%` }, grid: { color: 'rgba(0,0,0,0.05)' } } } } });
+            state.charts.drawdowns = new Chart(document.getElementById('drawdownsChart').getContext('2d'), { type: 'line', data: { labels: state.results.labels, datasets: allPortfolios.map((p, i) => ({ label: p.name, data: p.drawdownHistory, borderColor: portfolioColors[i % 5], pointRadius: 0, tension: 0.2 })) }, options: { ...commonOptions(true, v => `${v}%`), plugins: { tooltip: {enabled: true, backgroundColor: '#253858', callbacks: { label: (c) => `${c.dataset.label}: ${c.parsed.y.toFixed(1)}%` } } } } });
+            
             document.querySelector('[data-component="monthly-heatmap-container"]').innerHTML = allPortfolios.map(p => `<h3>${p.name}</h3>` + createHeatmapHTML(p)).join('');
             document.querySelector('[data-component="correlation-matrix-container"]').innerHTML = createCorrelationMatrixHTML(allPortfolios, state.results.correlationMatrix);
 
@@ -424,16 +578,16 @@
             const i = state.projections.inputs; const r = state.projections.results; const isLoading = state.projections.isLoading;
             const availablePortfolios = state.results ? state.results.portfolios.map(p => p.name) : [];
             if (!state.projections.selectedPortfolio && availablePortfolios.length > 0) { state.projections.selectedPortfolio = availablePortfolios[0]; }
-            let setupHTML = `<div class="card"><div class="section-header"><h2>${uiStrings.projectionsTitle}</h2></div><div class="controls-grid"><div class="control-group"><label>${uiStrings.labels.portfolioToProject}</label><select class="form-control" data-action="selectProjectionPortfolio" ${isLoading ? 'disabled' : ''}>${availablePortfolios.map(name => `<option ${name === state.projections.selectedPortfolio ? 'selected' : ''}>${name}</option>`).join('')}</select></div><div class="control-group"><label>${uiStrings.labels.currentAge}</label><input type="number" class="form-control" data-proj-key="currentAge" value="${i.currentAge}" ${isLoading ? 'disabled' : ''}></div><div class="control-group"><label>${uiStrings.labels.retirementAge}</label><input type="number" class="form-control" data-proj-key="retirementAge" value="${i.retirementAge}" ${isLoading ? 'disabled' : ''}></div><div class="control-group"><label>${uiStrings.labels.lifeExpectancy}</label><input type="number" class="form-control" data-proj-key="lifeExpectancy" value="${i.lifeExpectancy}" ${isLoading ? 'disabled' : ''}></div><div class="control-group"><label>${uiStrings.labels.annualSavings}</label><input type="number" class="form-control" data-proj-key="annualSavings" value="${i.annualSavings}" ${isLoading ? 'disabled' : ''}></div><div class="control-group"><label>${uiStrings.labels.savingsIncrease}</label><input type="number" class="form-control" data-proj-key="savingsIncrease" value="${i.savingsIncrease}" ${isLoading ? 'disabled' : ''}></div><div class="control-group"><label>${uiStrings.labels.expectedInflation}</label><input type="number" class="form-control" data-proj-key="inflation" value="${i.inflation}" ${isLoading ? 'disabled' : ''}></div></div><div class="run-button-container"><button class="btn btn--primary" data-action="runProjections" ${isLoading ? 'disabled' : ''}>${uiStrings.runProjections}</button><div class="loader" style="${isLoading ? 'display: inline-block;' : ''}"></div></div></div>`;
+            let setupHTML = `<div class="card"><div class="section-header"><h2>${uiStrings.projectionsTitle}</h2></div><div class="controls-grid"><div class="control-group"><label>${uiStrings.labels.portfolioToProject}</label><select class="form-control" data-action="selectProjectionPortfolio" ${isLoading ? 'disabled' : ''}>${availablePortfolios.map(name => `<option ${name === state.projections.selectedPortfolio ? 'selected' : ''}>${name}</option>`).join('')}</select></div><div class="control-group"><label>${uiStrings.labels.currentAge}</label><input type="number" class="form-control" data-proj-key="currentAge" value="${i.currentAge}" ${isLoading ? 'disabled' : ''}></div><div class="control-group"><label>${uiStrings.labels.retirementAge}</label><input type="number" class="form-control" data-proj-key="retirementAge" value="${i.retirementAge}" ${isLoading ? 'disabled' : ''}></div><div class="control-group"><label>${uiStrings.labels.lifeExpectancy}</label><input type="number" class="form-control" data-proj-key="lifeExpectancy" value="${i.lifeExpectancy}" ${isLoading ? 'disabled' : ''}></div><div class="control-group"><label>${uiStrings.labels.annualSavings}</label><input type="number" class="form-control" data-proj-key="annualSavings" value="${i.annualSavings}" ${isLoading ? 'disabled' : ''}></div><div class="control-group"><label>${uiStrings.labels.savingsIncrease}</label><input type="number" class="form-control" data-proj-key="savingsIncrease" value="${i.savingsIncrease}" ${isLoading ? 'disabled' : ''}></div><div class="control-group"><label>${uiStrings.labels.expectedInflation}</label><input type="number" class="form-control" data-proj-key="inflation" value="${i.inflation}" ${isLoading ? 'disabled' : ''}></div></div><div class="run-button-container"><button class="btn btn--primary" data-action="runProjections" ${isLoading ? 'disabled' : ''}>${uiStrings.runProjections}</button><div class="loader" style="${isLoading ? 'display: inline-block;' : ''}"></div><span id="proj-announcer" class="visually-hidden" aria-live="assertive" role="status"></span></div></div>`;
             let resultsHTML = '';
             if (r) { resultsHTML = `<div class="projections-grid"><div class="card grid-col-span-2"><div class="section-header"><h2>Projections for ${r.name}</h2></div><h3 class="chart-title">Monte Carlo Cone of Probability</h3><div class="chart-container" style="height: 500px;"><canvas id="projectionsChart"></canvas></div></div><div class="card"><div data-component="projection-overview-table"></div></div><div class="card"><div data-component="projection-dividends-table"></div></div></div>`; }
             dom.projectionsArea.innerHTML = setupHTML + resultsHTML;
             if (r) { setTimeout(() => { const canvas = document.getElementById('projectionsChart'); if (!canvas) { log('Error: Projections chart canvas not found in DOM.', 'error'); return; } if (state.charts.projections) { state.charts.projections.destroy(); } state.charts.projections = new Chart(canvas.getContext('2d'), { type: 'line', data: { labels: r.labels, datasets: [{ label: 'Worst Case (10th Percentile)', data: r.worstCase, borderColor: 'rgba(229, 73, 73, 0.4)', backgroundColor: 'rgba(229, 73, 73, 0.1)', pointRadius: 0, tension: 0.2, fill: 'origin' }, { label: 'Best Case (90th Percentile)', data: r.bestCase, borderColor: 'rgba(0, 163, 117, 0.4)', backgroundColor: 'rgba(76, 111, 255, 0.15)', pointRadius: 0, tension: 0.2, fill: '-1' }, { label: 'Median Outcome (50th Percentile)', data: r.medianCase, borderColor: 'var(--c-primary)', borderWidth: 2.5, pointRadius: 0, tension: 0.2, fill: false }] }, options: commonOptions(false, v => `$${Math.round(v / 1000)}k`) }); document.querySelector('[data-component="projection-overview-table"]').innerHTML = createTableHTML(['Metric', 'Value'], [['Portfolio Balance at Retirement', `$${r.balanceAtRetirement.toLocaleString()}`], ['Total Contributions', `$${r.totalContributions.toLocaleString()}`], ['Total Growth', `$${(r.balanceAtRetirement - r.totalContributions).toLocaleString()}`], ['SWR (4% Rule) Income', `$${r.safeWithdrawalIncome.toLocaleString()} / year`],]); document.querySelector('[data-component="projection-dividends-table"]').innerHTML = createTableHTML(['Metric', 'Value'], [['Projected Annual Income at Retirement', `$${r.incomeAtRetirement.toLocaleString()}`], ['Projected Yield on Cost', `${r.projectedYoC.toFixed(2)} %`],]); }, 0); }
         }
-        function createTableHTML(headers, rows, defs = {}) { const infoIcon = (metric) => defs[metric] ? `<span class="metric-label" title="${defs[metric]}">${metric} <svg class="info-icon" width="14" height="14" viewBox="0 0 16 16"><path fill="currentColor" d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/><path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533L8.93 6.588zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/></svg></span>` : metric; const head = `<thead><tr>${headers.map(h => `<th>${infoIcon(h)}</th>`).join('')}</tr></thead>`; const body = `<tbody>${rows.map(row => `<tr>${row.map(cell => `<td>${cell}</td>`).join('')}</tr>`).join('')}</tbody>`; return `<div class="table-container"><table>${head}${body}</table></div>`; }
-        function createHeatmapHTML(portfolio) { const years = state.results.labels.slice(0, -1).map(d => d.getFullYear()); const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']; let table = '<table><thead><tr><th>Year</th>' + months.map(m => `<th>${m}</th>`).join('') + '</tr></thead><tbody>'; years.forEach((year, i) => { table += `<tr><td><strong>${year}</strong></td>`; const rowData = portfolio.monthlyReturns[i]; rowData.forEach(cellData => { const absVal = Math.abs(cellData); const color = cellData >= 0 ? `rgba(0, 163, 117, ${Math.min(1, absVal / 8)})` : `rgba(229, 73, 73, ${Math.min(1, absVal / 8)})`; const textColor = absVal > 4 ? 'white' : 'var(--c-text-main)'; table += `<td style="background-color: ${color}; color: ${textColor};">${cellData.toFixed(1)}%</td>`; }); table += '</tr>'; }); table += '</tbody></table>'; return `<div class="table-container">${table}</div>`; }
-        function createCorrelationMatrixHTML(portfolios, matrix) { const portfolioNames = portfolios.map(p => p.name); let table = '<table><thead><tr><th></th>' + portfolioNames.map(name => `<th>${name}</th>`).join('') + '</tr></thead><tbody>'; matrix.forEach((row, i) => { table += `<tr><td><strong>${portfolioNames[i]}</strong></td>`; row.forEach((cell, j) => { const absVal = Math.abs(cell); const orange = [255, 160, 0]; const blue = [76, 111, 255]; const color = cell > 0 ? blue : orange; const bgColor = `rgba(${color[0]}, ${color[1]}, ${color[2]}, ${absVal})`; const textColor = absVal > 0.6 ? 'white' : 'var(--c-text-main)'; table += `<td style="background-color: ${i === j ? 'transparent' : bgColor}; color: ${textColor};">${cell.toFixed(2)}</td>`; }); table += '</tr>'; }); table += '</tbody></table>'; return `<div class="table-container">${table}</div>`; }
-        function setTableScrollHint() { document.querySelectorAll('.table-container').forEach(c => { const isScrollable = c.scrollWidth > c.clientWidth; c.classList.toggle('is-scrollable', isScrollable); }); }
+        function createTableHTML(headers, rows, defs = {}) { const infoIcon = (metric) => defs[metric] ? `<span class="metric-label" title="${defs[metric]}">${metric} <svg class="info-icon" width="14" height="14" viewBox="0 0 16 16"><path fill="currentColor" d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/><path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533L8.93 6.588zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/></svg></span>` : metric; const head = `<thead><tr>${headers.map(h => `<th>${infoIcon(h)}</th>`).join('')}</tr></thead>`; const body = `<tbody>${rows.map(row => `<tr>${row.map(cell => `<td>${cell}</td>`).join('')}</tr>`).join('')}</tbody>`; return `<div class="table-wrapper"><div class="table-container"><table>${head}${body}</table></div></div>`; }
+        function createHeatmapHTML(portfolio) { const years = state.results.labels.slice(0, -1).map(d => d.getFullYear()); const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']; let table = '<table><thead><tr><th>Year</th>' + months.map(m => `<th>${m}</th>`).join('') + '</tr></thead><tbody>'; years.forEach((year, i) => { table += `<tr><td><strong>${year}</strong></td>`; const rowData = portfolio.monthlyReturns[i]; rowData.forEach(cellData => { const absVal = Math.abs(cellData); const color = cellData >= 0 ? `rgba(0, 163, 117, ${Math.min(1, absVal / 8)})` : `rgba(229, 73, 73, ${Math.min(1, absVal / 8)})`; const textColor = absVal > 4 ? 'white' : 'var(--c-text-main)'; table += `<td style="background-color: ${color}; color: ${textColor};">${cellData.toFixed(1)}%</td>`; }); table += '</tr>'; }); table += '</tbody></table>'; return `<div class="table-wrapper"><div class="table-container">${table}</div></div>`; }
+        function createCorrelationMatrixHTML(portfolios, matrix) { const portfolioNames = portfolios.map(p => p.name); let table = '<table><thead><tr><th></th>' + portfolioNames.map(name => `<th>${name}</th>`).join('') + '</tr></thead><tbody>'; matrix.forEach((row, i) => { table += `<tr><td><strong>${portfolioNames[i]}</strong></td>`; row.forEach((cell, j) => { const absVal = Math.abs(cell); const orange = [255, 160, 0]; const blue = [76, 111, 255]; const color = cell > 0 ? blue : orange; const bgColor = `rgba(${color[0]}, ${color[1]}, ${color[2]}, ${absVal})`; const textColor = absVal > 0.6 ? 'white' : 'var(--c-text-main)'; table += `<td style="background-color: ${i === j ? 'transparent' : bgColor}; color: ${textColor};">${cell.toFixed(2)}</td>`; }); table += '</tr>'; }); table += '</tbody></table>'; return `<div class="table-wrapper"><div class="table-container">${table}</div></div>`; }
+        function setTableScrollHint() { document.querySelectorAll('.table-wrapper').forEach(wrapper => { const container = wrapper.querySelector('.table-container'); if(container) { const isScrollable = container.scrollWidth > container.clientWidth; wrapper.classList.toggle('is-scrollable', isScrollable); } }); }
 
         const actions = {
             goToStep(step) { step = parseInt(step); if (step > state.maxStep) state.maxStep = step; state.currentStep = step; window.scrollTo(0, 0); render('goToStep'); },
@@ -502,18 +656,77 @@
             updateTicker(pId, tId, field, value) { const p = state.portfolios.find(p => p.id === parseInt(pId)); if (p) { const t = p.tickers.find(t => t.id === parseInt(tId)); if (t) { t[field] = field === 'allocation' ? parseFloat(value) || 0 : value; logAction('updateTicker', { pId, tId, field, value }); validateAllPortfolios(); } } },
             updateConfig: (key, value) => { if (typeof state.config[key] === 'boolean') { state.config[key] = !state.config[key]; } else { state.config[key] = value; } logAction('updateConfig', { key, value }); },
             runBacktest() {
+                const btn = dom.runBacktestBtn;
                 logAction('runBacktest', { config: state.config, portfolios: state.portfolios });
-                dom.runBacktestBtn.disabled = true; dom.runBacktestBtn.nextElementSibling.style.display = 'inline-block';
+                btn.disabled = true;
+                btn.nextElementSibling.style.display = 'inline-block';
                 setTimeout(() => {
                     const portfoliosWithData = state.portfolios.map(p => createMockData(p.name, p.tickers, state.config));
                     const benchmarksWithData = [createMockData(state.config.benchmark1, [{ symbol: state.config.benchmark1, allocation: 100 }], state.config, true), createMockData(state.config.benchmark2, [{ symbol: state.config.benchmark2, allocation: 100 }], state.config, true)];
-                    state.results = { labels: Array.from({ length: 15 }, (_, i) => new Date(2011 + i, 0, 1)), portfolios: portfoliosWithData, benchmarks: benchmarksWithData, correlationMatrix: createCorrelationMatrix([...portfoliosWithData, ...benchmarksWithData]) };
-                    actions.goToStep(3); dom.runBacktestBtn.nextElementSibling.style.display = 'none'; log('Backtest complete.', 'success');
+                    state.results = { ...state.results, labels: Array.from({ length: 15 }, (_, i) => new Date(2011 + i, 0, 1)), portfolios: portfoliosWithData, benchmarks: benchmarksWithData, correlationMatrix: createCorrelationMatrix([...portfoliosWithData, ...benchmarksWithData]) };
+                    
+                    btn.nextElementSibling.style.display = 'none';
+                    btn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg> <span>Success!</span>`;
+                    btn.classList.remove('btn--primary');
+                    btn.classList.add('btn--success');
+                    dom.runAnnouncer.textContent = 'Backtest complete.';
+
+                    setTimeout(() => {
+                        actions.goToStep(3);
+                        btn.disabled = false;
+                        btn.classList.remove('btn--success');
+                        btn.classList.add('btn--primary');
+                        btn.innerHTML = `<span>Run Backtest</span>`;
+                        renderUIText(btn);
+                    }, 1000);
+
+                    log('Backtest complete.', 'success');
                 }, 1500);
+            },
+            setZoom(range, initial = false) {
+                if (!initial) { logAction('setZoom', { range }); }
+                state.results.activeZoomRange = range;
+                const chart = state.charts.growth;
+                if (!chart || !state.results.labels) return;
+
+                const labels = state.results.labels.map(d => d.getTime());
+                const max = labels[labels.length - 1];
+                let min = labels[0];
+                
+                const lastDate = new Date(max);
+                let startDate = new Date(lastDate);
+
+                const rangeMap = { '30D': 30, '90D': 90, '1Y': 365, '3Y': 365 * 3, '5Y': 365 * 5, '10Y': 365 * 10 };
+
+                if (rangeMap[range]) {
+                    startDate.setDate(lastDate.getDate() - rangeMap[range]);
+                    min = startDate.getTime();
+                }
+
+                chart.options.scales.x.min = (range.toUpperCase() === 'ALL' || min < labels[0]) ? null : min;
+                chart.options.scales.x.max = (range.toUpperCase() === 'ALL') ? null : max;
+                chart.update();
+
+                if (!initial) {
+                    const container = document.querySelector('.chart-controls');
+                    if (container) {
+                        container.querySelectorAll('[data-action="setZoom"]').forEach(btn => {
+                            btn.classList.toggle('active', btn.dataset.range.toUpperCase() === range.toUpperCase());
+                        });
+                        container.querySelector('.reset-zoom-btn').classList.toggle('hidden', range.toUpperCase() === 'ALL');
+                    }
+                }
             },
             runProjections() {
                 logAction('runProjections', { inputs: state.projections.inputs });
-                state.projections.isLoading = true; render('runProjections_start');
+                const btn = dom.projectionsArea.querySelector('[data-action="runProjections"]');
+                const loader = btn.nextElementSibling;
+                const announcer = document.getElementById('proj-announcer');
+
+                state.projections.isLoading = true;
+                btn.disabled = true;
+                loader.style.display = 'inline-block';
+                
                 setTimeout(() => {
                     const inputs = state.projections.inputs; const portfolio = state.results.portfolios.find(p => p.name === state.projections.selectedPortfolio);
                     if (!portfolio) { log('Error: Selected portfolio for projection not found.', 'error'); state.projections.isLoading = false; render('runProjections_error'); return; }
@@ -528,7 +741,20 @@
                     }
                     const balanceAtRetirement = medianData[medianData.length - 1];
                     state.projections.results = { name: portfolio.name, labels, medianCase: medianData, bestCase: bestData, worstCase: worstData, balanceAtRetirement, totalContributions: portfolio.totalInvested + totalContributions, safeWithdrawalIncome: balanceAtRetirement * 0.04, incomeAtRetirement: portfolio.incomeLast12Mo * Math.pow(1.05, yearsToRetire), projectedYoC: (portfolio.incomeLast12Mo * Math.pow(1.05, yearsToRetire)) / (portfolio.totalInvested + totalContributions) * 100 };
-                    state.projections.isLoading = false; log('Projections complete.', 'success'); render('runProjections_complete');
+                    state.projections.isLoading = false;
+                    
+                    loader.style.display = 'none';
+                    btn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg> <span>Success!</span>`;
+                    btn.classList.remove('btn--primary');
+                    btn.classList.add('btn--success');
+                    if (announcer) announcer.textContent = 'Projections complete.';
+                    
+                    log('Projections complete.', 'success');
+                    
+                    setTimeout(() => {
+                        render('runProjections_complete');
+                    }, 1000);
+
                 }, 1000);
             },
             updateProjectionInput: (key, value) => { state.projections.inputs[key] = parseFloat(value) || 0; logAction('updateProjectionInput', { key, value }); },
@@ -598,7 +824,7 @@
             const target = e.target.closest('[data-action], .step'); if (!target) return;
             const action = target.dataset.action;
             const step = target.closest('.step'); if (step && step.classList.contains('locked')) return logAction('clickBlocked', { reason: 'Step is locked' });
-            const actionMap = { goToStep: () => actions.goToStep(target.dataset.step), toggleDebug: () => actions.toggleDebug(), toggleModal: () => actions.toggleModal(target.dataset.modal), copyShareUrl: () => actions.copyShareUrl(e), startOver: () => actions.startOver(), exportPDF: () => actions.exportPDF(), exportCSV: () => actions.exportCSV(), addPortfolio: () => actions.addPortfolio(), removePortfolio: () => actions.removePortfolio(target.dataset.id), addTicker: () => actions.addTicker(target.dataset.id), removeTicker: () => { const row = target.closest('.ticker-input-row'); actions.removeTicker(row.dataset.portfolioId, row.dataset.id); }, runBacktest: () => actions.runBacktest(), runProjections: () => actions.runProjections() };
+            const actionMap = { goToStep: () => actions.goToStep(target.dataset.step), toggleDebug: () => actions.toggleDebug(), toggleModal: () => actions.toggleModal(target.dataset.modal), copyShareUrl: () => actions.copyShareUrl(e), startOver: () => actions.startOver(), exportPDF: () => actions.exportPDF(), exportCSV: () => actions.exportCSV(), addPortfolio: () => actions.addPortfolio(), removePortfolio: () => actions.removePortfolio(target.dataset.id), addTicker: () => actions.addTicker(target.dataset.id), removeTicker: () => { const row = target.closest('.ticker-input-row'); actions.removeTicker(row.dataset.portfolioId, row.dataset.id); }, runBacktest: () => actions.runBacktest(), runProjections: () => actions.runProjections(), setZoom: () => actions.setZoom(target.dataset.range) };
             if (actionMap[action]) actionMap[action]();
             else if (step) actions.goToStep(step.dataset.step);
         });
