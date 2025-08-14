@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Portfolio Backtester v24.0 (Final Professional Polish)</title>
+    <title>Portfolio Backtester v29.0 (Polished UI)</title>
     
     <!-- Chart.js Libraries & Plugins -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -24,10 +24,10 @@
         --c-primary: #4C6FFF; --c-primary-hover: #3a5ce0; --c-primary-bg: rgba(76, 111, 255, 0.1);
         --c-border: #DFE1E6; --c-bg-main: #F4F5F7; --c-bg-card: #ffffff; --c-bg-alt: #FAFBFC;
         --c-text-main: #253858; --c-text-light: #6B778C;
-        --c-success: #00A375; --c-danger: #E54949;
+        --c-success: #00A375; --c-danger: #E54949; --c-danger-hover: #c93e3e;
         --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
         --fs-sm: 0.875rem; --fs-xs: 0.75rem;
-        --fs-h1: clamp(1.6rem, 4vw, 2rem); --fs-h2: clamp(1.2rem, 3vw, 1.5rem);
+        --fs-h1: clamp(1.4rem, 4vw, 1.8rem); --fs-h2: clamp(1.2rem, 3vw, 1.5rem);
         --space-xs: 4px; --space-sm: 8px; --space-md: 12px; --space-lg: 18px; --space-xl: 28px;
         --border-radius: 8px; --shadow-sm: 0 1px 3px rgba(23, 43, 77, 0.1), 0 1px 2px rgba(23, 43, 77, 0.08);
         --shadow-md: 0 4px 8px rgba(23, 43, 77, 0.12), 0 2px 4px rgba(23, 43, 77, 0.08);
@@ -36,24 +36,66 @@
       html { scroll-behavior: smooth; }
       body { font-family: var(--font-sans); background-color: var(--c-bg-main); color: var(--c-text-main); margin: 0; padding: var(--space-md); }
       main { max-width: 1400px; margin: 0 auto; }
-      header { position: relative; padding: 0 var(--space-md); margin-bottom: var(--space-lg); }
+      
+      header {
+        display: flex;
+        align-items: center;
+        padding: 0 var(--space-sm);
+        margin-bottom: var(--space-lg);
+        min-height: 50px;
+        gap: var(--space-md);
+      }
+      .header-left, .header-right {
+        flex: 1;
+      }
+      .header-right {
+        display: flex;
+        justify-content: flex-end;
+      }
+      .header-center {
+        text-align: center;
+      }
+
       h1, h2, h3, h4 { margin: 0; line-height: 1.3; font-weight: 600; }
-      h1 { font-size: var(--fs-h1); text-align: center; margin-bottom: var(--space-xs); }
+      h1 { font-size: var(--fs-h1); margin-bottom: var(--space-xs); }
       h2 { font-size: var(--fs-h2); }
       h3.chart-title { text-align: center; margin-top: var(--space-xl); margin-bottom: var(--space-sm); font-size: 1.1rem; }
-      .version { font-size: var(--fs-sm); color: var(--c-text-light); text-align: center; margin-bottom: var(--space-lg); }
+      .version { font-size: var(--fs-sm); color: var(--c-text-light); }
       .card { background: var(--c-bg-card); border-radius: var(--border-radius); padding: var(--space-lg); margin-bottom: var(--space-lg); box-shadow: var(--shadow-sm); border: 1px solid var(--c-border); transition: all 0.2s ease-in-out; }
       .card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
       
-      .btn { cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: var(--space-sm); font-weight: 500; font-size: var(--fs-sm); padding: 10px 16px; border-radius: 6px; text-decoration: none; transition: all 0.2s; border: 1px solid transparent; }
+      .btn { cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: var(--space-sm); font-weight: 500; font-size: var(--fs-sm); padding: 10px 16px; border-radius: 6px; text-decoration: none; transition: all 0.2s; border: 1px solid transparent; white-space: nowrap; }
       .btn:hover:not(:disabled) { transform: translateY(-1px); filter: brightness(1.05); }
       .btn--primary { background-color: var(--c-primary); color: white; }
       .btn--primary:hover:not(:disabled) { background-color: var(--c-primary-hover); }
       .btn:disabled { background-color: #dfe1e6; color: #a5adba; cursor: not-allowed; }
       .btn--secondary { background-color: #f4f5f7; color: var(--c-text-main); border-color: #dfe1e6; }
       .btn--secondary:hover:not(:disabled) { background-color: #e6e9ee; }
-      
-      .form-control { width: 100%; font-family: inherit; font-size: 1rem; padding: 0.6em 1em; border-radius: 6px; border: 1px solid #dfe1e6; }
+      .btn--danger { background-color: var(--c-danger); color: white; }
+      .btn--danger:hover:not(:disabled) { background-color: var(--c-danger-hover); }
+      .btn-icon { background: none; border: none; padding: var(--space-sm); cursor: pointer; color: var(--c-text-light); border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; }
+      .btn-icon:hover { background-color: var(--c-bg-alt); color: var(--c-text-main); }
+      .btn-icon.danger:hover { background-color: rgba(229, 73, 73, 0.1); color: var(--c-danger); }
+
+      .form-control {
+        width: 100%;
+        font-family: inherit;
+        font-size: 1rem;
+        padding: 0.6em 1em;
+        border-radius: 6px;
+        border: 1px solid var(--c-border);
+        background-color: var(--c-bg-alt);
+      }
+      select.form-control {
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
+        background-repeat: no-repeat;
+        background-position: right 0.75rem center;
+        background-size: 16px 12px;
+      }
+
       .control-group { display: flex; flex-direction: column; gap: var(--space-xs); }
       .checkbox-group { display: flex; align-items: center; gap: var(--space-sm); margin-top: var(--space-md); }
       .table-container { overflow-x: auto; position: relative; }
@@ -66,7 +108,7 @@
       .positive { color: var(--c-success); } .negative { color: var(--c-danger); }
       .hidden { display: none !important; }
       .visually-hidden { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border-width: 0; }
-      .app-section { display: none; }
+      .app-section { display: none; position: relative; z-index: 1; }
       .app-section.active { display: block; animation: fadeIn 0.4s ease-out; }
       @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
       .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-lg); padding-bottom: var(--space-md); border-bottom: 1px solid var(--c-border); }
@@ -78,16 +120,46 @@
       .step { display: flex; flex-direction: column; align-items: center; gap: var(--space-sm); color: var(--c-text-light); font-size: var(--fs-xs); font-weight: 600; text-align: center; flex: 1; }
       .step-icon { width: 32px; height: 32px; border-radius: 50%; border: 2px solid var(--c-border); display: flex; align-items: center; justify-content: center; font-weight: bold; background-color: var(--c-bg-card); }
       .step.active .step-icon { border-color: var(--c-primary); color: var(--c-primary); }
-      .step.completed .step-icon { border-color: var(--c-success); background-color: var(--c-success); color: var(--c-white); }
+      .step.completed .step-icon { border-color: var(--c-success); background-color: var(--c-success); color: white; }
       .step.completed .step-icon svg { display: block; } .step.completed .step-icon > span { display: none; }
       .step.locked { opacity: 0.6; cursor: not-allowed; } .step:not(.locked) { cursor: pointer; }
       
-      #section-2 .portfolio-card { background: var(--c-bg-alt); border: 1px solid var(--c-border); }
-      #section-2 .portfolio-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-md); }
+      #section-2 .portfolio-card {
+        background: var(--c-bg-alt);
+        border: 1px solid var(--c-border);
+        padding: var(--space-lg);
+        border-radius: var(--border-radius);
+      }
+      #section-2 .portfolio-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: var(--space-lg);
+      }
       #section-2 .portfolio-name-input { font-size: 1.25rem; font-weight: 600; border: none; background: transparent; padding: 0; width: 100%; }
-      #section-2 .ticker-input-row { display: grid; grid-template-columns: 1fr auto auto; gap: var(--space-sm); align-items: center; margin-bottom: var(--space-sm); }
-      #section-2 .allocation-input { max-width: 80px; text-align: right; }
-      #section-2 .portfolio-footer { display: flex; justify-content: flex-end; align-items: center; gap: var(--space-md); margin-top: var(--space-md); }
+      
+      #section-2 .ticker-input-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--space-sm);
+        align-items: center;
+        margin-bottom: var(--space-md);
+      }
+      #section-2 .ticker-input-row > [data-field="symbol"] {
+        flex: 1 1 120px;
+      }
+      #section-2 .ticker-input-row > .allocation-input {
+        flex: 0 0 80px;
+      }
+
+      #section-2 .allocation-input { text-align: right; }
+      #section-2 .portfolio-footer {
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        gap: var(--space-md);
+        margin-top: var(--space-lg);
+      }
       #section-2 .portfolio-allocation-total { font-size: var(--fs-sm); font-weight: 600; padding: var(--space-sm); border-radius: 6px; }
       #section-2 .portfolio-allocation-total.invalid { color: var(--c-danger); background-color: rgba(229, 73, 73, 0.1); }
       #section-2 .portfolio-allocation-total.valid { color: var(--c-success); background-color: rgba(0, 163, 117, 0.1); }
@@ -98,17 +170,16 @@
       @keyframes rotation { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
       .metric-label { display: inline-flex; align-items: center; gap: var(--space-sm); }
       .metric-label .info-icon { color: #a5adba; cursor: help; }
-      #modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(23, 43, 77, 0.5); z-index: 200; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.3s; }
-      #modal-overlay.visible { opacity: 1; pointer-events: all; }
+      .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(23, 43, 77, 0.5); z-index: 200; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.3s; }
+      .modal-overlay.visible { opacity: 1; pointer-events: all; }
       .modal-content { background: white; padding: var(--space-lg); border-radius: var(--border-radius); width: 90%; max-width: 500px; transform: scale(0.95); transition: transform 0.3s; }
-      #modal-overlay.visible .modal-content { transform: scale(1); }
+      .modal-overlay.visible .modal-content { transform: scale(1); }
       .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-md); }
-      .modal-footer { margin-top: var(--space-lg); display: flex; justify-content: flex-end; }
+      .modal-footer { margin-top: var(--space-lg); display: flex; justify-content: flex-end; gap: var(--space-sm); }
       #debug-window { position: fixed; bottom: 10px; right: 10px; width: 350px; max-height: 250px; background: rgba(0,0,0,0.85); color: white; border-radius: var(--border-radius); padding: var(--space-sm); font-family: monospace; font-size: 11px; z-index: 9999; overflow-y: auto; box-shadow: 0 4px 15px rgba(0,0,0,0.4); border-top: 2px solid var(--c-primary); }
       #debug-window p { margin: 0; padding: 3px 5px; border-bottom: 1px solid #444; word-wrap: break-word; }
       #debug-window pre { background: #222; padding: var(--space-sm); border-radius: 4px; white-space: pre-wrap; word-break: break-all; }
       #debug-window .log-error { color: #ff8b8b; } #debug-window .log-success { color: #a5d6a7; } #debug-window .log-action { color: #82baff; }
-      #app-header-actions { position: absolute; top: 0; right: 0; }
       
       #section-1 .card { padding: var(--space-xl); }
       #section-1 .controls-grid { gap: var(--space-xl) var(--space-lg); }
@@ -120,7 +191,7 @@
         .card, .stepper-nav { box-shadow: none; border: 1px solid #ccc; page-break-inside: avoid; }
         .card:hover { transform: none; }
         h1, h2, h3, h4 { color: black; }
-        header, .navigation-buttons, .btn, .stepper-nav, #section-1, #section-2, .portfolio-footer, .portfolio-header button, #debug-window, #modal-overlay, #app-header-actions { display: none !important; }
+        header, .navigation-buttons, .btn, .stepper-nav, #section-1, #section-2, .portfolio-footer, .portfolio-header button, #debug-window, .modal-overlay, .header-right { display: none !important; }
         main { max-width: 100%; padding: 0; }
         .app-section { display: block !important; }
         @page { margin: 0.75in; }
@@ -130,26 +201,61 @@
 <body>
     <main id="app-container">
         <header>
-            <h1 data-uitext="mainTitle"></h1>
-            <p class="version" data-uitext="version"></p>
-            <div id="app-header-actions"><button class="btn btn--secondary" data-action="toggleDebug" data-uitext="toggleDebug"></button></div>
+            <div class="header-left"></div>
+            <div class="header-center">
+                <h1 data-uitext="mainTitle"></h1>
+                <p class="version" data-uitext="version"></p>
+            </div>
+            <div class="header-right">
+                <button class="btn btn--secondary" data-action="toggleDebug" data-uitext="toggleDebug"></button>
+            </div>
         </header>
         <nav class="stepper-nav card" data-component="stepper"></nav>
         <section id="section-1" class="app-section"><div class="card"><div class="section-header"><h2 data-uitext="setupTitle"></h2></div><div class="controls-grid" data-component="config-form"></div><div class="navigation-buttons"><span class="nav-group"></span><div class="nav-group"><button class="btn btn--primary" data-action="goToStep" data-step="2" data-uitext="nextPortfolios"></button></div></div></div></section>
-        <section id="section-2" class="app-section"><div class="card"><div class="section-header"><h2 data-uitext="portfoliosTitle"></h2></div><div data-component="portfolios-container"></div><div style="margin-top: var(--space-lg);"><button class="btn btn--secondary" data-action="addPortfolio"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg><span data-uitext="addPortfolio"></span></button></div><div class="run-button-container"><button id="run-backtest-btn" class="btn btn--primary" style="font-size: 1rem;" data-action="runBacktest" data-uitext="runBacktest" disabled></button><div class="loader"></div></div></div></section>
-        <section id="section-3" class="app-section"><div data-component="results-area"></div><div class="navigation-buttons"><div class="nav-group"><button class="btn btn--secondary" data-action="goToStep" data-step="2" data-uitext="back"></button><button class="btn btn--secondary" data-action="startOver" data-uitext="startOver"></button></div><div class="nav-group"><button class="btn btn--secondary" data-action="toggleModal" data-uitext="share"></button><button class="btn btn--secondary" data-action="exportCSV" data-uitext="exportCSV"></button><button class="btn btn--secondary" data-action="exportPDF" data-uitext="exportPDF"></button><button class="btn btn--primary" data-action="goToStep" data-step="4" data-uitext="nextProjections"></button></div></div></section>
+        <section id="section-2" class="app-section"><div class="card"><div class="section-header"><h2 data-uitext="portfoliosTitle"></h2></div><div data-component="portfolios-container"></div><div style="margin-top: var(--space-lg);"><button class="btn btn--secondary" data-action="addPortfolio"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="flex-shrink: 0;"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg><span data-uitext="addPortfolio"></span></button></div><div class="run-button-container"><button id="run-backtest-btn" class="btn btn--primary" style="font-size: 1rem;" data-action="runBacktest" data-uitext="runBacktest" disabled></button><div class="loader"></div></div></div></section>
+        <section id="section-3" class="app-section"><div data-component="results-area"></div><div class="navigation-buttons"><div class="nav-group"><button class="btn btn--secondary" data-action="goToStep" data-step="2" data-uitext="back"></button><button class="btn btn--secondary" data-action="startOver" data-uitext="startOver"></button></div><div class="nav-group"><button class="btn btn--secondary" data-action="toggleModal" data-modal="share" data-uitext="share"></button><button class="btn btn--secondary" data-action="exportCSV" data-uitext="exportCSV"></button><button class="btn btn--secondary" data-action="exportPDF" data-uitext="exportPDF"></button><button class="btn btn--primary" data-action="goToStep" data-step="4" data-uitext="nextProjections"></button></div></div></section>
         <section id="section-4" class="app-section"><div data-component="projections-area"></div><div class="navigation-buttons"><div class="nav-group"><button class="btn btn--secondary" data-action="goToStep" data-step="3" data-uitext="backToResults"></button></div><span class="nav-group"></span></div></section>
     </main>
-    <div id="modal-overlay" class="hidden" role="dialog" aria-modal="true" aria-labelledby="modal-title"><div class="modal-content"><div class="modal-header"><h2 id="modal-title" data-uitext="shareTitle"></h2><button class="btn-icon" data-action="toggleModal" aria-label="Close modal">&times;</button></div><p style="font-size: var(--fs-sm); color: var(--c-text-light);" data-uitext="shareSubtitle"></p><input type="text" readonly class="form-control" data-component="share-url-input"><div class="modal-footer"><button class="btn btn--primary" data-action="copyShareUrl" data-uitext="copyUrl"></button></div><div id="copy-announcer" class="visually-hidden" aria-live="polite" role="status"></div></div></div>
+    
+    <!-- Share Modal -->
+    <div id="share-modal-overlay" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="share-modal-title">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="share-modal-title" data-uitext="shareTitle"></h2>
+                <button class="btn-icon" data-action="toggleModal" data-modal="share" aria-label="Close Share Modal">&times;</button>
+            </div>
+            <p style="font-size: var(--fs-sm); color: var(--c-text-light);" data-uitext="shareSubtitle"></p>
+            <input type="text" readonly class="form-control" data-component="share-url-input" aria-label="Shareable URL">
+            <div class="modal-footer">
+                <button class="btn btn--primary" data-action="copyShareUrl" data-uitext="copyUrl"></button>
+            </div>
+            <div id="copy-announcer" class="visually-hidden" aria-live="polite" role="status"></div>
+        </div>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div id="confirm-modal-overlay" class="modal-overlay hidden" role="alertdialog" aria-modal="true" aria-labelledby="confirm-modal-title">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="confirm-modal-title"></h2>
+            </div>
+            <p id="confirm-modal-body"></p>
+            <div class="modal-footer">
+                <button class="btn btn--secondary" id="confirm-cancel-btn"></button>
+                <button class="btn btn--danger" id="confirm-ok-btn"></button>
+            </div>
+        </div>
+    </div>
+
     <div id="debug-window" class="hidden"></div>
-    <template id="portfolio-template"><div class="portfolio-card"><div class="portfolio-header"><input type="text" class="portfolio-name-input" data-action="updatePortfolioName"><button class="btn-icon danger" data-action="removePortfolio"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button></div><div data-component="tickers-container"></div><div class="portfolio-footer"><div class="portfolio-allocation-total"></div><button class="btn btn--secondary" data-action="addTicker"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg><span data-uitext="addTicker"></span></button></div></div></template>
-    <template id="ticker-template"><div class="ticker-input-row"><input type="text" class="form-control" placeholder="TICKER" data-action="updateTicker" data-field="symbol" onkeyup="this.value = this.value.toUpperCase()"><input type="number" class="form-control allocation-input" placeholder="%" min="0" max="100" data-action="updateTicker" data-field="allocation"><button class="btn-icon" title="Remove Ticker" data-action="removeTicker"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button></div></template>
+    <template id="portfolio-template"><div class="portfolio-card"><div class="portfolio-header"><input type="text" class="portfolio-name-input" data-action="updatePortfolioName" aria-label="Portfolio Name"><button class="btn-icon danger" data-action="removePortfolio" aria-label="Remove Portfolio"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button></div><div data-component="tickers-container"></div><div class="portfolio-footer"><div class="portfolio-allocation-total"></div><button class="btn btn--secondary" data-action="addTicker"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="flex-shrink: 0;"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg><span data-uitext="addTicker"></span></button></div></div></template>
+    <template id="ticker-template"><div class="ticker-input-row"><input type="text" class="form-control" placeholder="TICKER" data-action="updateTicker" data-field="symbol" onkeyup="this.value = this.value.toUpperCase()" aria-label="Ticker Symbol"><input type="number" class="form-control allocation-input" placeholder="%" min="0" max="100" data-action="updateTicker" data-field="allocation" aria-label="Allocation Percentage"><button class="btn-icon" data-action="removeTicker" aria-label="Remove Ticker"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button></div></template>
 
     <script>
     // --- UI TEXT STRINGS (for i18n preparation) ---
     const uiStrings = {
         mainTitle: 'Portfolio Backtester',
-        version: 'v24.0 (Final Professional Polish)',
+        version: 'v29.0 (Polished UI)',
         toggleDebug: 'Toggle Debug',
         setupTitle: 'Backtest Setup',
         portfoliosTitle: 'Configure Portfolios',
@@ -172,6 +278,14 @@
         runProjections: 'Run Projections',
         emptyPortfolioStateTitle: 'You have no portfolios.',
         emptyPortfolioStateSubtitle: 'Click the "Add Portfolio" button below to get started.',
+        confirmations: {
+            startOverTitle: 'Are you sure?',
+            startOverBody: 'This will reset all your configurations and portfolios. This action cannot be undone.',
+            removePortfolioTitle: 'Remove Portfolio?',
+            removePortfolioBody: 'Are you sure you want to remove this portfolio? This action cannot be undone.',
+            confirm: 'Confirm',
+            cancel: 'Cancel',
+        },
         labels: {
             startDate: 'Start Date', endDate: 'End Date', initialInvestment: 'Initial Investment ($)',
             contributionAmount: 'Contribution Amount ($)', contributionFrequency: 'Contribution Frequency',
@@ -201,7 +315,7 @@
         for (let i = 0; i < numYears; i++) {
             assetAllocHistory.push({ stocks: currentStockPct, bonds: 100 - currentStockPct });
             currentStockPct += (Math.random() - 0.4) * 5; // Drift
-            if (i % 4 === 3) currentStockPct = isBenchmark ? 100 : tickers.find(t => t.symbol === 'VTI' || t.symbol === 'SPY')?.allocation || 0; // Rebalance
+            if (i > 0 && i % 4 === 0) currentStockPct = isBenchmark ? 100 : tickers.find(t => t.symbol === 'VTI' || t.symbol === 'SPY')?.allocation || 0; // Rebalance
         }
         const drawdownHistory = Array.from({ length: numYears }, (_, i) => -Math.abs(Math.sin(i / 2) * (15 + Math.random() * 20) * (i / numYears)));
 
@@ -212,13 +326,8 @@
         const matrix = Array(numP).fill(null).map(() => Array(numP).fill(0));
         for (let i = 0; i < numP; i++) {
             for (let j = i; j < numP; j++) {
-                if (i === j) {
-                    matrix[i][j] = 1;
-                } else {
-                    const corr = Math.random() * 1.8 - 0.8;
-                    matrix[i][j] = Math.max(-1, Math.min(1, corr));
-                    matrix[j][i] = matrix[i][j];
-                }
+                if (i === j) { matrix[i][j] = 1; } 
+                else { const corr = Math.random() * 1.8 - 0.8; matrix[i][j] = Math.max(-1, Math.min(1, corr)); matrix[j][i] = matrix[i][j]; }
             }
         }
         return matrix;
@@ -228,19 +337,28 @@
     document.addEventListener('DOMContentLoaded', () => {
         Chart.register(ChartZoom);
 
-        let state = { currentStep: 1, maxStep: 1, isDebugVisible: false, isModalVisible: false, config: { startDate: '2011-10-20', endDate: '2025-08-13', initialInvestment: 100000, contributionAmount: 400, contributionFrequency: 'weekly', rebalanceFrequency: 'annually', reinvestDividends: true, riskFreeRate: 0, dividendTax: 0, cgtTax: 0, benchmark1: 'SPY', benchmark2: 'QQQ' }, portfolios: [], results: null, charts: {}, projections: { inputs: { currentAge: 30, retirementAge: 65, lifeExpectancy: 95, inflation: 2.5, annualSavings: 15000, savingsIncrease: 2 }, results: null, selectedPortfolio: '', isLoading: false } };
-        const dom = { app: document.getElementById('app-container'), stepper: document.querySelector('[data-component="stepper"]'), sections: document.querySelectorAll('.app-section'), configForm: document.querySelector('[data-component="config-form"]'), portfoliosContainer: document.querySelector('[data-component="portfolios-container"]'), resultsArea: document.querySelector('[data-component="results-area"]'), projectionsArea: document.querySelector('[data-component="projections-area"]'), runBacktestBtn: document.getElementById('run-backtest-btn'), debugWindow: document.getElementById('debug-window'), modalOverlay: document.getElementById('modal-overlay'), shareUrlInput: document.querySelector('[data-component="share-url-input"]'), portfolioTemplate: document.getElementById('portfolio-template'), tickerTemplate: document.getElementById('ticker-template'), copyAnnouncer: document.getElementById('copy-announcer') };
+        let state = { currentStep: 1, maxStep: 1, isDebugVisible: false, modal: { share: false, confirm: false }, config: { startDate: '2011-10-20', endDate: '2025-08-13', initialInvestment: 100000, contributionAmount: 400, contributionFrequency: 'weekly', rebalanceFrequency: 'annually', reinvestDividends: true, riskFreeRate: 0, dividendTax: 0, cgtTax: 0, benchmark1: 'SPY', benchmark2: 'QQQ' }, portfolios: [], results: null, charts: {}, projections: { inputs: { currentAge: 30, retirementAge: 65, lifeExpectancy: 95, inflation: 2.5, annualSavings: 15000, savingsIncrease: 2 }, results: null, selectedPortfolio: '', isLoading: false } };
+        const dom = { app: document.getElementById('app-container'), stepper: document.querySelector('[data-component="stepper"]'), sections: document.querySelectorAll('.app-section'), configForm: document.querySelector('[data-component="config-form"]'), portfoliosContainer: document.querySelector('[data-component="portfolios-container"]'), resultsArea: document.querySelector('[data-component="results-area"]'), projectionsArea: document.querySelector('[data-component="projections-area"]'), runBacktestBtn: document.getElementById('run-backtest-btn'), debugWindow: document.getElementById('debug-window'), shareModal: document.getElementById('share-modal-overlay'), confirmModal: document.getElementById('confirm-modal-overlay'), shareUrlInput: document.querySelector('[data-component="share-url-input"]'), portfolioTemplate: document.getElementById('portfolio-template'), tickerTemplate: document.getElementById('ticker-template'), copyAnnouncer: document.getElementById('copy-announcer') };
         const log = (message, type = 'info') => { if (!dom.debugWindow) return; const p = document.createElement('p'); p.innerHTML = `<strong>[${new Date().toLocaleTimeString()}]</strong> ${message}`; const typeMap = { error: 'log-error', success: 'log-success', action: 'log-action' }; if (typeMap[type]) p.className = typeMap[type]; dom.debugWindow.appendChild(p); dom.debugWindow.scrollTop = dom.debugWindow.scrollHeight; };
         const logAction = (name, payload) => { let payloadString = ''; if (payload) { payloadString = `<pre>${JSON.stringify(payload, null, 2)}</pre>`; } log(`ACTION: ${name} ${payload ? '| Payload:' : ''} ${payloadString}`, 'action'); }
 
-        function render(triggeringAction = 'unknown') { log(`Render triggered by: ${triggeringAction}`); renderUIText(); renderDebug(); renderModal(); renderStepper(); renderSections(); renderConfigForm(); renderPortfolios(); renderResults(); renderProjections(); setTableScrollHint(); }
-        function renderUIText() { document.querySelectorAll('[data-uitext]').forEach(el => { el.textContent = uiStrings[el.dataset.uitext] || el.dataset.uitext; });}
+        function render(triggeringAction = 'unknown') { log(`Render triggered by: ${triggeringAction}`); renderUIText(); renderDebug(); renderModals(); renderStepper(); renderSections(); renderConfigForm(); renderPortfolios(); renderResults(); renderProjections(); setTableScrollHint(); }
+        function renderUIText(container = document) { container.querySelectorAll('[data-uitext]').forEach(el => { const key = el.dataset.uitext; if(uiStrings[key]) { el.textContent = uiStrings[key]; } });}
         function renderDebug() { dom.debugWindow.classList.toggle('hidden', !state.isDebugVisible); }
-        function renderModal() { dom.modalOverlay.classList.toggle('hidden', !state.isModalVisible); dom.modalOverlay.classList.toggle('visible', state.isModalVisible); if (state.isModalVisible) { dom.shareUrlInput.value = actions.generateShareUrl(); dom.shareUrlInput.select(); } }
+        function renderModals() {
+            dom.shareModal.classList.toggle('hidden', !state.modal.share);
+            dom.shareModal.classList.toggle('visible', state.modal.share);
+            if (state.modal.share) {
+                dom.shareUrlInput.value = actions.generateShareUrl();
+                dom.shareUrlInput.select();
+            }
+            dom.confirmModal.classList.toggle('hidden', !state.modal.confirm);
+            dom.confirmModal.classList.toggle('visible', state.modal.confirm);
+        }
         function renderStepper() { const checkIcon = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>`; dom.stepper.innerHTML = [1, 2, 3, 4].map(s => { const l = ['Setup', 'Portfolios', 'Results', 'Projections'][s - 1]; return `<div class="step ${state.currentStep === s ? 'active' : ''} ${state.maxStep > s ? 'completed' : ''} ${s > state.maxStep ? 'locked' : ''}" data-step="${s}"><div class="step-icon">${state.maxStep > s ? checkIcon : `<span>${s}</span>`}</div><span class="step-label">${l}</span></div>`; }).join(''); }
         function renderSections() { dom.sections.forEach(s => s.classList.toggle('active', parseInt(s.id.split('-')[1]) === state.currentStep)); }
         function renderConfigForm() { if (state.currentStep !== 1) return; const c = state.config; const l = uiStrings.labels; dom.configForm.innerHTML = `<div class="control-group"><label>${l.startDate}</label><input type="date" class="form-control" data-config-key="startDate" value="${c.startDate}"></div> <div class="control-group"><label>${l.endDate}</label><input type="date" class="form-control" data-config-key="endDate" value="${c.endDate}"></div> <div class="control-group"><label>${l.initialInvestment}</label><input type="number" class="form-control" data-config-key="initialInvestment" value="${c.initialInvestment}"></div> <div class="control-group"><label>${l.contributionAmount}</label><input type="number" class="form-control" data-config-key="contributionAmount" value="${c.contributionAmount}"></div> <div class="control-group"><label>${l.contributionFrequency}</label><select class="form-control" data-config-key="contributionFrequency" value="${c.contributionFrequency}"><option>Weekly</option><option>Monthly</option></select></div> <div class="control-group"><label>${l.rebalanceFrequency}</label><select class="form-control" data-config-key="rebalanceFrequency" value="${c.rebalanceFrequency}"><option>Annually</option><option>Quarterly</option></select></div> <div class="control-group"><label>${l.benchmark1}</label><input type="text" class="form-control" data-config-key="benchmark1" value="${c.benchmark1}"></div> <div class="control-group"><label>${l.benchmark2}</label><input type="text" class="form-control" data-config-key="benchmark2" value="${c.benchmark2}"></div> <div class="control-group"><label>${l.dividendTax}</label><input type="number" class="form-control" data-config-key="dividendTax" value="${c.dividendTax}"></div> <div class="control-group"><label>${l.cgtTax}</label><input type="number" class="form-control" data-config-key="cgtTax" value="${c.cgtTax}"></div> <div class="checkbox-group"><input type="checkbox" id="reinvest-dividends" data-config-key="reinvestDividends" ${c.reinvestDividends ? 'checked' : ''}><label for="reinvest-dividends">${l.reinvestDividends}</label></div>`; }
-        function renderPortfolios() { if (state.currentStep !== 2) return; if (state.portfolios.length === 0) { dom.portfoliosContainer.innerHTML = `<div class="empty-state"><h3>${uiStrings.emptyPortfolioStateTitle}</h3><p>${uiStrings.emptyPortfolioStateSubtitle}</p></div>`; validateAllPortfolios(); return; } dom.portfoliosContainer.innerHTML = ''; state.portfolios.forEach(p => { const pNode = dom.portfolioTemplate.content.cloneNode(true); pNode.querySelector('.portfolio-card').dataset.id = p.id; pNode.querySelector('.portfolio-name-input').value = p.name; pNode.querySelector('.portfolio-name-input').dataset.id = p.id; pNode.querySelector('[data-action="removePortfolio"]').dataset.id = p.id; pNode.querySelector('[data-action="addTicker"]').dataset.id = p.id; const tickersContainer = pNode.querySelector('[data-component="tickers-container"]'); p.tickers.forEach(t => { const tNode = dom.tickerTemplate.content.cloneNode(true); const row = tNode.querySelector('.ticker-input-row'); row.dataset.id = t.id; row.dataset.portfolioId = p.id; tNode.querySelector('[data-field="symbol"]').value = t.symbol; tNode.querySelector('[data-field="allocation"]').value = t.allocation; tickersContainer.appendChild(tNode); }); dom.portfoliosContainer.appendChild(pNode); }); validateAllPortfolios(); }
+        function renderPortfolios() { if (state.currentStep !== 2) return; if (state.portfolios.length === 0) { dom.portfoliosContainer.innerHTML = `<div class="empty-state"><h3>${uiStrings.emptyPortfolioStateTitle}</h3><p>${uiStrings.emptyPortfolioStateSubtitle}</p></div>`; validateAllPortfolios(); return; } dom.portfoliosContainer.innerHTML = ''; state.portfolios.forEach(p => { const pNode = dom.portfolioTemplate.content.cloneNode(true); pNode.querySelector('.portfolio-card').dataset.id = p.id; pNode.querySelector('.portfolio-name-input').value = p.name; pNode.querySelector('.portfolio-name-input').dataset.id = p.id; pNode.querySelector('[data-action="removePortfolio"]').dataset.id = p.id; pNode.querySelector('[data-action="addTicker"]').dataset.id = p.id; const tickersContainer = pNode.querySelector('[data-component="tickers-container"]'); p.tickers.forEach(t => { const tNode = dom.tickerTemplate.content.cloneNode(true); const row = tNode.querySelector('.ticker-input-row'); row.dataset.id = t.id; row.dataset.portfolioId = p.id; tNode.querySelector('[data-field="symbol"]').value = t.symbol; tNode.querySelector('[data-field="allocation"]').value = t.allocation; tickersContainer.appendChild(tNode); }); renderUIText(pNode); dom.portfoliosContainer.appendChild(pNode); }); validateAllPortfolios(); }
         function renderResults() {
             if (state.currentStep !== 3 || !state.results) { dom.resultsArea.innerHTML = ''; return; }
             Object.values(state.charts).forEach(c => { if (c && c.destroy) c.destroy() });
@@ -285,12 +403,64 @@
         const actions = {
             goToStep(step) { step = parseInt(step); if (step > state.maxStep) state.maxStep = step; state.currentStep = step; window.scrollTo(0, 0); render('goToStep'); },
             toggleDebug() { state.isDebugVisible = !state.isDebugVisible; render('toggleDebug'); },
-            toggleModal() { state.isModalVisible = !state.isModalVisible; render('toggleModal'); },
-            startOver() { logAction('startOver'); window.history.replaceState({}, '', window.location.pathname); window.location.reload(); },
+            toggleModal(modal, forceState = undefined) { state.modal[modal] = forceState !== undefined ? forceState : !state.modal[modal]; render('toggleModal'); },
+            showConfirmation(config) {
+                document.getElementById('confirm-modal-title').textContent = config.title;
+                document.getElementById('confirm-modal-body').textContent = config.body;
+                const okBtn = document.getElementById('confirm-ok-btn');
+                const cancelBtn = document.getElementById('confirm-cancel-btn');
+                okBtn.textContent = config.okText || uiStrings.confirmations.confirm;
+                cancelBtn.textContent = config.cancelText || uiStrings.confirmations.cancel;
+                
+                actions.toggleModal('confirm', true);
+                okBtn.focus();
+
+                return new Promise((resolve) => {
+                    const okHandler = () => { cleanup(); resolve(true); };
+                    const cancelHandler = () => { cleanup(); resolve(false); };
+                    const keydownHandler = (e) => { if (e.key === 'Escape') cancelHandler(); if(e.key === 'Tab') { e.preventDefault(); (document.activeElement === okBtn ? cancelBtn : okBtn).focus(); } };
+                    const cleanup = () => {
+                        okBtn.removeEventListener('click', okHandler);
+                        cancelBtn.removeEventListener('click', cancelHandler);
+                        document.removeEventListener('keydown', keydownHandler);
+                        actions.toggleModal('confirm', false);
+                    };
+                    okBtn.addEventListener('click', okHandler, { once: true });
+                    cancelBtn.addEventListener('click', cancelHandler, { once: true });
+                    document.addEventListener('keydown', keydownHandler);
+                });
+            },
+            async startOver() { 
+                logAction('startOver'); 
+                const confirmed = await actions.showConfirmation({
+                    title: uiStrings.confirmations.startOverTitle,
+                    body: uiStrings.confirmations.startOverBody,
+                });
+                if (confirmed) {
+                    log('Start over confirmed by user.');
+                    window.history.replaceState({}, '', window.location.pathname); 
+                    window.location.reload(); 
+                } else {
+                    log('Start over cancelled by user.');
+                }
+            },
             exportPDF() { logAction('exportPDF'); window.print(); },
             exportCSV() { if (!state.results) return; const all = [...state.results.portfolios, ...state.results.benchmarks]; const headers = ['Metric', ...all.map(p => p.name)]; const rows = [['CAGR', ...all.map(p => p.cagr.toFixed(2))], ['Volatility', ...all.map(p => p.volatility.toFixed(2))], ['Sharpe Ratio', ...all.map(p => p.sharpeRatio.toFixed(2))]]; const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n'); const link = document.createElement("a"); link.setAttribute("href", 'data:text/csv;charset=utf-8,' + encodeURI(csv)); link.setAttribute("download", "backtest_results.csv"); link.click(); },
             addPortfolio() { const newId = Date.now(); state.portfolios.push({ id: newId, name: `Portfolio ${state.portfolios.length + 1}`, tickers: [{ id: newId + 1, symbol: 'VTI', allocation: 60 }, { id: newId + 2, symbol: 'BND', allocation: 40 }] }); logAction('addPortfolio', { newId }); render('addPortfolio'); },
-            removePortfolio: id => { logAction('removePortfolio', { id }); state.portfolios = state.portfolios.filter(p => p.id !== parseInt(id)); render('removePortfolio'); },
+            async removePortfolio(id) { 
+                logAction('removePortfolio', { id }); 
+                const confirmed = await actions.showConfirmation({
+                    title: uiStrings.confirmations.removePortfolioTitle,
+                    body: uiStrings.confirmations.removePortfolioBody
+                });
+                if(confirmed) {
+                    state.portfolios = state.portfolios.filter(p => p.id !== parseInt(id)); 
+                    log('Portfolio removal confirmed.');
+                    render('removePortfolio');
+                } else {
+                    log('Portfolio removal cancelled.');
+                }
+            },
             updatePortfolioName: (id, name) => { const p = state.portfolios.find(p => p.id === parseInt(id)); if (p) p.name = name; logAction('updatePortfolioName', { id, name }); },
             addTicker(pId) { const p = state.portfolios.find(p => p.id === parseInt(pId)); if (p) { p.tickers.push({ id: Date.now(), symbol: '', allocation: 0 }); logAction('addTicker', { pId }); render('addTicker'); } },
             removeTicker(pId, tId) { const p = state.portfolios.find(p => p.id === parseInt(pId)); if (p) { p.tickers = p.tickers.filter(t => t.id !== parseInt(tId)); logAction('removeTicker', { pId, tId }); render('removeTicker'); } },
@@ -330,17 +500,37 @@
             selectProjectionPortfolio: (name) => { state.projections.selectedPortfolio = name; state.projections.results = null; render('selectProjectionPortfolio'); },
             copyShareUrl(e) {
                 const url = dom.shareUrlInput.value;
-                navigator.clipboard.writeText(url).then(() => {
-                    const btn = e.target.closest('button');
-                    btn.textContent = uiStrings.copied;
-                    btn.style.backgroundColor = 'var(--c-success)';
-                    dom.copyAnnouncer.textContent = 'Copied to clipboard!';
-                    setTimeout(() => {
-                        btn.textContent = uiStrings.copyUrl;
-                        btn.style.backgroundColor = 'var(--c-primary)';
-                        dom.copyAnnouncer.textContent = '';
-                    }, 2000);
-                }).catch(err => { log('Failed to copy URL: ' + err, 'error'); dom.copyAnnouncer.textContent = 'Failed to copy URL.'; });
+                const btn = e.target.closest('button');
+                if (navigator.clipboard && window.isSecureContext) {
+                    navigator.clipboard.writeText(url).then(() => actions.showCopySuccess(btn)).catch(err => {
+                        log('Modern copy failed, trying fallback: ' + err, 'error');
+                        actions.copyUrlFallback(btn);
+                    });
+                } else {
+                    log('Using fallback copy method.');
+                    actions.copyUrlFallback(btn);
+                }
+            },
+            copyUrlFallback(btn) {
+                dom.shareUrlInput.select();
+                try {
+                    if (document.execCommand('copy')) { actions.showCopySuccess(btn); }
+                    else { throw new Error('execCommand returned false'); }
+                } catch (err) {
+                    log('Fallback copy failed: ' + err, 'error');
+                    dom.copyAnnouncer.textContent = 'Failed to copy URL.';
+                }
+                window.getSelection().removeAllRanges();
+            },
+            showCopySuccess(btn) {
+                btn.textContent = uiStrings.copied;
+                btn.style.backgroundColor = 'var(--c-success)';
+                dom.copyAnnouncer.textContent = 'Copied to clipboard!';
+                setTimeout(() => {
+                    btn.textContent = uiStrings.copyUrl;
+                    btn.style.backgroundColor = 'var(--c-primary)';
+                    dom.copyAnnouncer.textContent = '';
+                }, 2000);
             },
             generateShareUrl() {
                 try {
@@ -373,7 +563,7 @@
             const target = e.target.closest('[data-action], .step'); if (!target) return;
             const action = target.dataset.action;
             const step = target.closest('.step'); if (step && step.classList.contains('locked')) return logAction('clickBlocked', { reason: 'Step is locked' });
-            const actionMap = { goToStep: () => actions.goToStep(target.dataset.step), toggleDebug: () => actions.toggleDebug(), toggleModal: () => actions.toggleModal(), copyShareUrl: () => actions.copyShareUrl(e), startOver: () => actions.startOver(), exportPDF: () => actions.exportPDF(), exportCSV: () => actions.exportCSV(), addPortfolio: () => actions.addPortfolio(), removePortfolio: () => actions.removePortfolio(target.dataset.id), addTicker: () => actions.addTicker(target.dataset.id), removeTicker: () => { const row = target.closest('.ticker-input-row'); actions.removeTicker(row.dataset.portfolioId, row.dataset.id); }, runBacktest: () => actions.runBacktest(), runProjections: () => actions.runProjections() };
+            const actionMap = { goToStep: () => actions.goToStep(target.dataset.step), toggleDebug: () => actions.toggleDebug(), toggleModal: () => actions.toggleModal(target.dataset.modal), copyShareUrl: () => actions.copyShareUrl(e), startOver: () => actions.startOver(), exportPDF: () => actions.exportPDF(), exportCSV: () => actions.exportCSV(), addPortfolio: () => actions.addPortfolio(), removePortfolio: () => actions.removePortfolio(target.dataset.id), addTicker: () => actions.addTicker(target.dataset.id), removeTicker: () => { const row = target.closest('.ticker-input-row'); actions.removeTicker(row.dataset.portfolioId, row.dataset.id); }, runBacktest: () => actions.runBacktest(), runProjections: () => actions.runProjections() };
             if (actionMap[action]) actionMap[action]();
             else if (step) actions.goToStep(step.dataset.step);
         });
