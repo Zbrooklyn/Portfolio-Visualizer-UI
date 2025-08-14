@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Portfolio Backtester v29.0 (Polished UI)</title>
+    <title>Portfolio Backtester v31.0 (Adaptive Layout)</title>
     
     <!-- Chart.js Libraries & Plugins -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -34,7 +34,13 @@
       }
       *, *::before, *::after { box-sizing: border-box; }
       html { scroll-behavior: smooth; }
-      body { font-family: var(--font-sans); background-color: var(--c-bg-main); color: var(--c-text-main); margin: 0; padding: var(--space-md); }
+      body { 
+        font-family: var(--font-sans); 
+        background-color: var(--c-bg-main); 
+        color: var(--c-text-main); 
+        margin: 0; 
+        padding: var(--space-md);
+      }
       main { max-width: 1400px; margin: 0 auto; }
       
       header {
@@ -186,6 +192,23 @@
 
       .chart-container { position: relative; width: 100%; height: 400px; margin-top: var(--space-md); }
       
+      @media (min-width: 1024px) {
+        body {
+          padding: var(--space-lg) var(--space-xl);
+        }
+        .results-grid, .projections-grid {
+          display: grid;
+          gap: var(--space-lg);
+          grid-template-columns: 1fr 1fr;
+        }
+        .results-grid .card, .projections-grid .card {
+          margin-bottom: 0;
+        }
+        .grid-col-span-2 {
+          grid-column: 1 / -1;
+        }
+      }
+      
       @media print {
         body { background-color: white !important; color: black !important; font-size: 10pt; }
         .card, .stepper-nav { box-shadow: none; border: 1px solid #ccc; page-break-inside: avoid; }
@@ -255,7 +278,7 @@
     // --- UI TEXT STRINGS (for i18n preparation) ---
     const uiStrings = {
         mainTitle: 'Portfolio Backtester',
-        version: 'v29.0 (Polished UI)',
+        version: 'v31.0 (Adaptive Layout)',
         toggleDebug: 'Toggle Debug',
         setupTitle: 'Backtest Setup',
         portfoliosTitle: 'Configure Portfolios',
@@ -363,13 +386,25 @@
             if (state.currentStep !== 3 || !state.results) { dom.resultsArea.innerHTML = ''; return; }
             Object.values(state.charts).forEach(c => { if (c && c.destroy) c.destroy() });
             const allPortfolios = [...state.results.portfolios, ...state.results.benchmarks];
-            dom.resultsArea.innerHTML = `<div class="card"><h2 class="section-header">Performance</h2><div class="chart-container"><canvas id="growthChart"></canvas></div><h3 class="chart-title">Annual Returns</h3><div class="chart-container"><canvas id="annualReturnsChart"></canvas></div></div> <div class="card"><h2 class="section-header">Portfolio Efficiency (Risk vs. Return)</h2><div class="chart-container" style="height: 450px;"><canvas id="efficientFrontierChart"></canvas></div></div> <div class="card"><h2 class="section-header">Monthly Performance Analysis</h2><div data-component="monthly-heatmap-container"></div></div> <div class="card"><h2 class="section-header">Risk, Volatility & Correlation</h2><div data-component="risk-table"></div><h3 class="chart-title">Correlation Matrix</h3><div data-component="correlation-matrix-container" style="padding: 0 var(--space-sm);"></div></div> <div class="card"><h2 class="section-header">Capital Snapshot</h2><div data-component="capital-snapshot-table"></div></div> <div class="card"><h2 class="section-header">Asset Allocation</h2><div class="chart-container" style="height: 300px;"><canvas id="assetAllocationChart"></canvas></div><div data-component="allocation-table"></div></div> <div class="card"><h2 class="section-header">Income & Yield</h2><div data-component="income-table"></div></div> <div class="card"><h2 class="section-header">Costs & Efficiency</h2><div data-component="costs-table"></div></div> <div class="card"><h2 class="section-header">Drawdowns</h2><div class="chart-container" style="height: 300px;"><canvas id="drawdownsChart"></canvas></div><div data-component="drawdowns-table"></div></div> <div class="card"><h2 class="section-header">Consistency</h2><div data-component="consistency-table"></div></div> <div class="card"><h2 class="section-header">Holdings Breakdown</h2><div data-component="holdings-tables-container"></div></div>`;
+            dom.resultsArea.innerHTML = `<div class="results-grid">
+                <div class="card grid-col-span-2"><h2 class="section-header">Performance</h2><div class="chart-container"><canvas id="growthChart"></canvas></div><h3 class="chart-title">Annual Returns</h3><div class="chart-container"><canvas id="annualReturnsChart"></canvas></div></div>
+                <div class="card"><h2 class="section-header">Portfolio Efficiency</h2><div class="chart-container" style="height: 450px;"><canvas id="efficientFrontierChart"></canvas></div></div>
+                <div class="card"><h2 class="section-header">Drawdowns</h2><div class="chart-container" style="height: 300px;"><canvas id="drawdownsChart"></canvas></div><div data-component="drawdowns-table"></div></div>
+                <div class="card grid-col-span-2"><h2 class="section-header">Capital Snapshot</h2><div data-component="capital-snapshot-table"></div></div>
+                <div class="card"><h2 class="section-header">Risk & Volatility</h2><div data-component="risk-table"></div></div>
+                <div class="card"><h2 class="section-header">Consistency</h2><div data-component="consistency-table"></div></div>
+                <div class="card grid-col-span-2"><h2 class="section-header">Correlation Matrix</h2><div data-component="correlation-matrix-container" style="padding: 0 var(--space-sm);"></div></div>
+                <div class="card"><h2 class="section-header">Asset Allocation</h2><div data-component="allocation-table"></div></div>
+                <div class="card"><h2 class="section-header">Income & Yield</h2><div data-component="income-table"></div></div>
+                <div class="card"><h2 class="section-header">Costs & Efficiency</h2><div data-component="costs-table"></div></div>
+                <div class="card"><h2 class="section-header">Holdings Breakdown</h2><div data-component="holdings-tables-container"></div></div>
+                <div class="card grid-col-span-2"><h2 class="section-header">Monthly Performance</h2><div data-component="monthly-heatmap-container"></div></div>
+            </div>`;
             const portfolioColors = ['#4C6FFF', '#00A375', '#E54949', '#7E57C2', '#FFA000'];
             const commonOptions = (isTime = false, yLabelCallback) => ({ responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false }, plugins: { legend: { position: 'bottom' }, tooltip: { backgroundColor: '#253858', titleFont: { weight: 'bold' }, bodyFont: { family: "'Inter', sans-serif" }, cornerRadius: 4 }, zoom: { pan: { enabled: isTime, mode: 'x' }, zoom: { wheel: { enabled: isTime }, mode: 'x' } } }, scales: { x: isTime ? { type: 'time', time: { unit: 'year' }, grid: { color: 'rgba(0,0,0,0.05)' } } : { grid: { color: 'rgba(0,0,0,0.05)' } }, y: { ticks: { callback: yLabelCallback }, grid: { color: 'rgba(0,0,0,0.05)' } } } });
             state.charts.growth = new Chart(document.getElementById('growthChart').getContext('2d'), { type: 'line', data: { labels: state.results.labels, datasets: allPortfolios.map((p, i) => ({ label: p.name, data: p.growth, borderColor: portfolioColors[i % 5], tension: 0.1, pointRadius: 0, fill: true, backgroundColor: (ctx) => { const gradient = ctx.chart.ctx.createLinearGradient(0, 0, 0, ctx.chart.height); const color = portfolioColors[i % 5]; gradient.addColorStop(0, `${color}40`); gradient.addColorStop(1, `${color}00`); return gradient; } })) }, options: commonOptions(true, v => `$${Math.round(v / 1000)}k`) });
             state.charts.annualReturns = new Chart(document.getElementById('annualReturnsChart').getContext('2d'), { type: 'bar', data: { labels: state.results.labels.slice(1).map(d => d.getFullYear()), datasets: allPortfolios.map((p, i) => ({ label: p.name, data: p.annualReturns, backgroundColor: portfolioColors[i % 5] })) }, options: commonOptions(false, v => `${v.toFixed(0)}%`) });
             state.charts.efficientFrontier = new Chart(document.getElementById('efficientFrontierChart').getContext('2d'), { type: 'scatter', data: { datasets: allPortfolios.map((p, i) => ({ label: p.name, data: [{ x: p.volatility, y: p.cagr }], backgroundColor: portfolioColors[i % 5], pointRadius: 8, pointHoverRadius: 12 })) }, options: { ...commonOptions(), plugins: { legend: { position: 'bottom' }, tooltip: { ...commonOptions().plugins.tooltip, callbacks: { label: (c) => `${c.dataset.label}: (${c.parsed.x.toFixed(1)}% Risk, ${c.parsed.y.toFixed(1)}% Return)` } } }, scales: { x: { title: { display: true, text: 'Risk (Annualized Volatility %)' }, grid: { color: 'rgba(0,0,0,0.05)' } }, y: { title: { display: true, text: 'Return (CAGR %)' }, ticks: { callback: v => `${v.toFixed(1)}%` }, grid: { color: 'rgba(0,0,0,0.05)' } } } } });
-            state.charts.assetAllocation = new Chart(document.getElementById('assetAllocationChart').getContext('2d'), { type: 'line', data: { labels: state.results.labels, datasets: [{ label: 'Stocks', data: allPortfolios[0].assetAllocationHistory.map(d => d.stocks), borderColor: portfolioColors[0], backgroundColor: portfolioColors[0] }, { label: 'Bonds', data: allPortfolios[0].assetAllocationHistory.map(d => d.bonds), borderColor: portfolioColors[1], backgroundColor: portfolioColors[1] }] }, options: { ...commonOptions(true, v => `${v}%`), scales: { ...commonOptions(true, v => `${v}%`).scales, y: { ...commonOptions(true, v => `${v}%`).scales.y, stacked: true, max: 100 } }, plugins: { ...commonOptions(true).plugins, tooltip: { ...commonOptions(true).plugins.tooltip, callbacks: { label: (c) => `${c.dataset.label}: ${c.parsed.y.toFixed(1)}%` } } } } });
             state.charts.drawdowns = new Chart(document.getElementById('drawdownsChart').getContext('2d'), { type: 'line', data: { labels: state.results.labels, datasets: allPortfolios.map((p, i) => ({ label: p.name, data: p.drawdownHistory, borderColor: portfolioColors[i % 5], pointRadius: 0, tension: 0.2 })) }, options: { ...commonOptions(true, v => `${v}%`), plugins: { ...commonOptions(true).plugins, tooltip: { ...commonOptions(true).plugins.tooltip, callbacks: { label: (c) => `${c.dataset.label}: ${c.parsed.y.toFixed(1)}%` } } } } });
 
             document.querySelector('[data-component="monthly-heatmap-container"]').innerHTML = allPortfolios.map(p => `<h3>${p.name}</h3>` + createHeatmapHTML(p)).join('');
@@ -391,7 +426,7 @@
             if (!state.projections.selectedPortfolio && availablePortfolios.length > 0) { state.projections.selectedPortfolio = availablePortfolios[0]; }
             let setupHTML = `<div class="card"><div class="section-header"><h2>${uiStrings.projectionsTitle}</h2></div><div class="controls-grid"><div class="control-group"><label>${uiStrings.labels.portfolioToProject}</label><select class="form-control" data-action="selectProjectionPortfolio" ${isLoading ? 'disabled' : ''}>${availablePortfolios.map(name => `<option ${name === state.projections.selectedPortfolio ? 'selected' : ''}>${name}</option>`).join('')}</select></div><div class="control-group"><label>${uiStrings.labels.currentAge}</label><input type="number" class="form-control" data-proj-key="currentAge" value="${i.currentAge}" ${isLoading ? 'disabled' : ''}></div><div class="control-group"><label>${uiStrings.labels.retirementAge}</label><input type="number" class="form-control" data-proj-key="retirementAge" value="${i.retirementAge}" ${isLoading ? 'disabled' : ''}></div><div class="control-group"><label>${uiStrings.labels.lifeExpectancy}</label><input type="number" class="form-control" data-proj-key="lifeExpectancy" value="${i.lifeExpectancy}" ${isLoading ? 'disabled' : ''}></div><div class="control-group"><label>${uiStrings.labels.annualSavings}</label><input type="number" class="form-control" data-proj-key="annualSavings" value="${i.annualSavings}" ${isLoading ? 'disabled' : ''}></div><div class="control-group"><label>${uiStrings.labels.savingsIncrease}</label><input type="number" class="form-control" data-proj-key="savingsIncrease" value="${i.savingsIncrease}" ${isLoading ? 'disabled' : ''}></div><div class="control-group"><label>${uiStrings.labels.expectedInflation}</label><input type="number" class="form-control" data-proj-key="inflation" value="${i.inflation}" ${isLoading ? 'disabled' : ''}></div></div><div class="run-button-container"><button class="btn btn--primary" data-action="runProjections" ${isLoading ? 'disabled' : ''}>${uiStrings.runProjections}</button><div class="loader" style="${isLoading ? 'display: inline-block;' : ''}"></div></div></div>`;
             let resultsHTML = '';
-            if (r) { resultsHTML = `<div class="card"><div class="section-header"><h2>Projections for ${r.name}</h2></div><h3 class="chart-title">Monte Carlo Cone of Probability</h3><div class="chart-container" style="height: 500px;"><canvas id="projectionsChart"></canvas></div></div><div class="card"><div data-component="projection-overview-table"></div></div><div class="card"><div data-component="projection-dividends-table"></div></div>`; }
+            if (r) { resultsHTML = `<div class="projections-grid"><div class="card grid-col-span-2"><div class="section-header"><h2>Projections for ${r.name}</h2></div><h3 class="chart-title">Monte Carlo Cone of Probability</h3><div class="chart-container" style="height: 500px;"><canvas id="projectionsChart"></canvas></div></div><div class="card"><div data-component="projection-overview-table"></div></div><div class="card"><div data-component="projection-dividends-table"></div></div></div>`; }
             dom.projectionsArea.innerHTML = setupHTML + resultsHTML;
             if (r) { setTimeout(() => { const canvas = document.getElementById('projectionsChart'); if (!canvas) { log('Error: Projections chart canvas not found in DOM.', 'error'); return; } if (state.charts.projections) { state.charts.projections.destroy(); } state.charts.projections = new Chart(canvas.getContext('2d'), { type: 'line', data: { labels: r.labels, datasets: [{ label: 'Worst Case (10th Percentile)', data: r.worstCase, borderColor: 'rgba(229, 73, 73, 0.4)', backgroundColor: 'rgba(229, 73, 73, 0.1)', pointRadius: 0, tension: 0.2, fill: 'origin' }, { label: 'Best Case (90th Percentile)', data: r.bestCase, borderColor: 'rgba(0, 163, 117, 0.4)', backgroundColor: 'rgba(76, 111, 255, 0.15)', pointRadius: 0, tension: 0.2, fill: '-1' }, { label: 'Median Outcome (50th Percentile)', data: r.medianCase, borderColor: 'var(--c-primary)', borderWidth: 2.5, pointRadius: 0, tension: 0.2, fill: false }] }, options: commonOptions(false, v => `$${Math.round(v / 1000)}k`) }); document.querySelector('[data-component="projection-overview-table"]').innerHTML = createTableHTML(['Metric', 'Value'], [['Portfolio Balance at Retirement', `$${r.balanceAtRetirement.toLocaleString()}`], ['Total Contributions', `$${r.totalContributions.toLocaleString()}`], ['Total Growth', `$${(r.balanceAtRetirement - r.totalContributions).toLocaleString()}`], ['SWR (4% Rule) Income', `$${r.safeWithdrawalIncome.toLocaleString()} / year`],]); document.querySelector('[data-component="projection-dividends-table"]').innerHTML = createTableHTML(['Metric', 'Value'], [['Projected Annual Income at Retirement', `$${r.incomeAtRetirement.toLocaleString()}`], ['Projected Yield on Cost', `${r.projectedYoC.toFixed(2)} %`],]); }, 0); }
         }
